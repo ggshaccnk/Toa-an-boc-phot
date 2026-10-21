@@ -38,6 +38,8 @@ export interface AccusationPrompt {
   scenario: string;
   dramaticTag: string;
   penalties: string[];
+  authorName?: string; // If submitted by a player or AI
+  isAiGenerated?: boolean;
 }
 
 export interface Player {
@@ -55,6 +57,7 @@ export interface Player {
   timesConvicted: number;
   lastVerdict: boolean;
   assignedPenalty: string | null;
+  customPrompt?: string; // Secret accusation prompt submitted by this player
 }
 
 export interface FloatingReaction {
@@ -80,6 +83,9 @@ export interface GameState {
   voteResults: Record<string, number>; // playerId -> vote count
   chaosAnnouncements: string[];
   screenShaking: boolean;
+  customPromptsPool: AccusationPrompt[];
+  usedPromptIds: string[];
+  geminiApiKey?: string;
   history: {
     round: number;
     promptTitle: string;
@@ -93,6 +99,8 @@ export interface PeerMessage {
     | 'STATE_SYNC'
     | 'PLAYER_JOIN'
     | 'PLAYER_READY'
+    | 'UPDATE_PROFILE'
+    | 'SUBMIT_CUSTOM_PROMPT'
     | 'START_GAME'
     | 'PLAY_CARD'
     | 'CAST_VOTE'

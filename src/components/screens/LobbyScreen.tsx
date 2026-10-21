@@ -10,6 +10,8 @@ import {
   DoodleScale,
   DoodleBomb,
   DoodleDetective,
+  DoodlePen,
+  DoodleDice,
   WashiTape,
   RubberStamp,
 } from '@/components/common/HandDoodles';
@@ -24,7 +26,9 @@ interface LobbyScreenProps {
   onSetJoinCodeInput: (code: string) => void;
   onJoinRoom: (code: string) => void;
   onSetGameMode: (mode: GameMode) => void;
+  onSetGeminiApiKey: (key: string) => void;
   onUpdateProfile: (name: string, avatarId: string) => void;
+  onSubmitCustomPrompt: (text: string) => void;
   onAddBot: () => void;
   onRemovePlayer: (id: string) => void;
   onStartGame: () => void;
@@ -41,7 +45,9 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
   onSetJoinCodeInput,
   onJoinRoom,
   onSetGameMode,
+  onSetGeminiApiKey,
   onUpdateProfile,
+  onSubmitCustomPrompt,
   onAddBot,
   onRemovePlayer,
   onStartGame,
@@ -49,21 +55,60 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
 }) => {
   const [nameInput, setNameInput] = useState(localPlayer.name);
   const [selectedAvatar, setSelectedAvatar] = useState(localPlayer.avatarId);
+  const [profileSavedBadge, setProfileSavedBadge] = useState(false);
+  const [customPromptInput, setCustomPromptInput] = useState('');
+  const [isGeneratingAiPrompt, setIsGeneratingAiPrompt] = useState(false);
+  const [geminiKeyInput, setGeminiKeyInput] = useState(gameState.geminiApiKey || '');
+  const [showAiSettings, setShowAiSettings] = useState(false);
   const [isMuted, setIsMuted] = useState(partyAudio.getMuted());
   const [isBgmPlaying, setIsBgmPlaying] = useState(false);
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showMultiplayerHelper, setShowMultiplayerHelper] = useState(false);
 
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newName = e.target.value;
-    setNameInput(newName);
-    onUpdateProfile(newName, selectedAvatar);
+  // Profile Save
+  const handleSaveProfile = () => {
+    partyAudio.playCardPlay();
+    onUpdateProfile(nameInput, selectedAvatar);
+    setProfileSavedBadge(true);
+    setTimeout(() => setProfileSavedBadge(false), 2500);
   };
 
   const handleAvatarSelect = (avatarId: string) => {
     setSelectedAvatar(avatarId);
     partyAudio.playCardHover();
     onUpdateProfile(nameInput, avatarId);
+  };
+
+  // Submit Secret Custom Prompt
+  const handleSendPrompt = () => {
+    if (!customPromptInput.trim()) return;
+    onSubmitCustomPrompt(customPromptInput);
+    setCustomPromptInput('');
+  };
+
+  // Request AI Prompt Suggestion
+  const handleGetAiPromptSuggestion = async () => {
+    try {
+      setIsGeneratingAiPrompt(true);
+      partyAudio.playCardHover();
+
+      const res = await fetch('/api/gemini/generate-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: gameState.geminiApiKey }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.scenario) {
+          setCustomPromptInput(data.scenario);
+        }
+      }
+    } catch (e) {
+      console.warn('AI prompt error:', e);
+    } finally {
+      setIsGeneratingAiPrompt(false);
+    }
   };
 
   const toggleSound = () => {
@@ -209,7 +254,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
             type="button"
             onClick={() => onJoinRoom(joinCodeInput)}
             disabled={!joinCodeInput.trim()}
-            className="px-4 py-2 bg-yellow-300 hover:bg-yellow-400 disabled:opacity-50 border-2 border-slate-900 rounded-xl font-black text-xs uppercase shadow-pop-sm shrink-0 transition-transform active:translate-y-0.5"
+            className="px-4 py-2 bg-yellow-300 hover:bg-yellow-400 disabled:opacity-50 border-2 border-slate-900 rounded-xl font-black text-xs uppercase shadow-pop-sm shrink-0 transition-transform active:translate-y-0.5 cursor-pointer"
           >
             [ VÀO PHÒNG ]
           </button>
@@ -232,6 +277,68 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
           {copyNotification}
         </div>
       )}
+
+      {/* NEW: HÒM THƯ BÓC PHỐT BÍ MẬT (PLAYER CUSTOM PROMPT BOX) */}
+      <div className="p-5 bg-yellow-50 border-[2.5px] border-slate-900 rounded-3xl shadow-pop space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-slate-900 pb-2">
+          <div className="flex items-center gap-2">
+            <RubberStamp text="HÒM THƯ BÍ MẬT" color="red" />
+            <h2 className="text-sm md:text-base font-black text-slate-900 uppercase font-display">
+              TỰ SOẠN CÂU CÁO TRẠNG BÓC PHỐT BẠN BÈ ({gameState.customPromptsPool?.length || 0} CÂU ĐÃ NỘP)
+            </h2>
+          </div>
+          <span className="text-[11px] font-bold text-slate-600">
+            Hệ thống sẽ lấy chính câu này để xét xử trong trận!
+          </span>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={customPromptInput}
+              onChange={(e) => setCustomPromptInput(e.target.value)}
+              placeholder="VD: Ai là người vay tiền mua trà sữa xong giả vờ mất trí nhớ?"
+              maxLength={120}
+              className="flex-1 px-3 py-2 text-xs md:text-sm font-semibold bg-white border-2 border-slate-900 rounded-xl shadow-pop-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            />
+            <button
+              type="button"
+              onClick={handleGetAiPromptSuggestion}
+              disabled={isGeneratingAiPrompt}
+              className="px-3 py-2 bg-amber-200 hover:bg-amber-300 border-2 border-slate-900 rounded-xl font-black text-xs uppercase flex items-center justify-center gap-1.5 shadow-pop-sm shrink-0 transition-transform active:translate-y-0.5"
+            >
+              <DoodleDice className="w-4 h-4 shrink-0" />
+              <span>{isGeneratingAiPrompt ? 'Đang tạo...' : '🎲 GỢI Ý CÂU BẰNG AI'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleSendPrompt}
+              disabled={!customPromptInput.trim()}
+              className="px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white border-2 border-slate-900 rounded-xl font-black text-xs uppercase shadow-pop-sm shrink-0 transition-transform active:translate-y-0.5"
+            >
+              [ 📬 NỘP CÁO TRẠNG ]
+            </button>
+          </div>
+
+          {/* List of submitted prompts summary */}
+          {gameState.customPromptsPool && gameState.customPromptsPool.length > 0 && (
+            <div className="pt-2 flex flex-wrap gap-1.5">
+              <span className="text-[10px] font-black uppercase text-slate-700 py-0.5">
+                Các vụ án ẩn danh trong hòm thư:
+              </span>
+              {gameState.customPromptsPool.map((p, idx) => (
+                <span
+                  key={p.id}
+                  className="px-2 py-0.5 bg-white border border-slate-900 rounded-md text-[10px] font-bold text-slate-800 shadow-pop-sm"
+                >
+                  #{idx + 1}: &ldquo;{p.scenario.slice(0, 30)}...&rdquo;
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* GAME MODE SELECTION TABS */}
       <div className="p-5 bg-white border-[2.5px] border-slate-900 rounded-3xl shadow-pop space-y-3">
@@ -298,20 +405,38 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
             <RubberStamp text="ID THÀNH VIÊN" color="purple" />
           </div>
 
-          {/* Current Avatar Highlight */}
-          <div className="flex flex-col items-center justify-center p-3 bg-paper-cream border-2 border-slate-900 rounded-2xl">
+          {/* Current Avatar Highlight & Rename Box */}
+          <div className="flex flex-col items-center justify-center p-4 bg-paper-cream border-2 border-slate-900 rounded-2xl space-y-3">
             <DoodleAvatar avatarId={selectedAvatar} size="lg" />
-            <input
-              type="text"
-              value={nameInput}
-              onChange={handleNameChange}
-              maxLength={20}
-              placeholder="Nhập biệt danh..."
-              className="mt-3 px-3 py-1.5 text-center text-sm font-black text-slate-900 bg-white border-2 border-slate-900 rounded-xl shadow-pop-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 w-full"
-            />
-            <span className="text-[11px] font-bold text-slate-500 mt-1">
-              Gõ tên thật hoặc biệt danh gây cười
-            </span>
+            
+            <div className="w-full space-y-2">
+              <label className="block text-left text-[11px] font-black uppercase text-slate-700">
+                Tên hiển thị của bạn:
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  maxLength={20}
+                  placeholder="Nhập biệt danh..."
+                  className="flex-1 px-3 py-2 text-center text-sm font-black text-slate-900 bg-white border-2 border-slate-900 rounded-xl shadow-pop-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveProfile}
+                  className="px-3.5 py-2 bg-yellow-400 hover:bg-yellow-500 border-2 border-slate-900 rounded-xl font-black text-xs uppercase shadow-pop-sm shrink-0 transition-transform active:translate-y-0.5 cursor-pointer"
+                >
+                  [ LƯU ]
+                </button>
+              </div>
+
+              {profileSavedBadge && (
+                <div className="text-center py-1 bg-emerald-100 border border-emerald-800 text-emerald-900 font-black text-[11px] rounded-lg">
+                  ✓ ĐÃ LƯU TÊN MỚI THÀNH CÔNG!
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Choose Avatar Grid */}
@@ -335,6 +460,44 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Optional Gemini API Key Drawer Toggle */}
+          <div className="pt-2 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={() => setShowAiSettings(!showAiSettings)}
+              className="text-[11px] font-black uppercase text-purple-700 hover:underline flex items-center gap-1"
+            >
+              [ ⚙️ CẤU HÌNH GOOGLE GEMINI API KEY (TÙY CHỌN) ]
+            </button>
+
+            {showAiSettings && (
+              <div className="mt-2 p-3 bg-purple-50 border border-purple-800 rounded-xl space-y-2">
+                <span className="text-[10px] text-slate-700 block font-medium">
+                  Nhập API Key Google Gemini (nếu có) để AI tự động sáng tạo cáo trạng vô hạn:
+                </span>
+                <div className="flex gap-2">
+                  <input
+                    type="password"
+                    value={geminiKeyInput}
+                    onChange={(e) => setGeminiKeyInput(e.target.value)}
+                    placeholder="AIzaSy..."
+                    className="flex-1 px-2.5 py-1.5 text-xs font-mono bg-white border border-slate-900 rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSetGeminiApiKey(geminiKeyInput);
+                      partyAudio.playCardPlay();
+                    }}
+                    className="px-3 py-1 bg-purple-600 text-white font-black text-xs rounded-lg border border-slate-900"
+                  >
+                    Lưu
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -375,8 +538,8 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] font-semibold text-slate-500">
-                        {p.id === localPlayer.id ? '👤 Chính bạn' : 'Trực tuyến'}
+                      <span className="text-[10px] font-semibold text-slate-500 block truncate">
+                        {p.customPrompt ? '✓ Đã nộp cáo trạng' : 'Chưa nộp cáo trạng'}
                       </span>
                     </div>
                   </div>
@@ -477,7 +640,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
                 <p className="font-black text-slate-950 mb-1">
                   1. Giai đoạn 1: Khởi tố Cáo Trạng
                 </p>
-                <p>Hệ thống tự động tung ra 1 tình huống trớ trêu oái oăm (vd: Ai là người vay tiền xong giả vờ mất trí nhớ?).</p>
+                <p>Hệ thống tự động ưu tiên các câu do người chơi trong phòng nộp vào **Hòm Thư Bí Mật** hoặc sinh tự động bằng Gemini AI.</p>
               </div>
 
               <div className="p-3 bg-blue-50 border-2 border-slate-900 rounded-xl">

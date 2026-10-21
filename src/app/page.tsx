@@ -20,8 +20,10 @@ export default function Home() {
     joinCodeInput,
     setJoinCodeInput,
     setGameMode,
+    setGeminiApiKey,
     sendReaction,
     updateProfile,
+    submitCustomPrompt,
     addBotPlayer,
     removePlayer,
     startAccusationPhase,
@@ -50,7 +52,9 @@ export default function Home() {
             onSetJoinCodeInput={setJoinCodeInput}
             onJoinRoom={joinRoomAsGuest}
             onSetGameMode={setGameMode}
+            onSetGeminiApiKey={setGeminiApiKey}
             onUpdateProfile={updateProfile}
+            onSubmitCustomPrompt={submitCustomPrompt}
             onAddBot={addBotPlayer}
             onRemovePlayer={removePlayer}
             onStartGame={() => startAccusationPhase(1)}
