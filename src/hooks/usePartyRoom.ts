@@ -511,6 +511,8 @@ export function usePartyRoom() {
           'Tự nhận mình là kẻ ngốc nghếch nhất phòng',
         ],
         authorName: localPlayer.name,
+        source: 'custom',
+        isAiGenerated: false,
       };
 
       setLocalPlayer((prev) => ({ ...prev, customPrompt: formattedScenario }));

@@ -97,8 +97,25 @@ export const GameScreen: React.FC<GameScreenProps> = ({
           </div>
 
           <div className="max-w-3xl">
-            <div className="mb-2">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
               <WashiTape text={`CHUYÊN MỤC: ${currentPrompt.category}`} color="bg-amber-300 text-slate-950" />
+              {currentPrompt.source === 'gemini' || currentPrompt.isAiGenerated ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 text-white text-xs font-black uppercase rounded-xl border-2 border-slate-900 shadow-pop-sm">
+                  <span>✨ GOOGLE GEMINI 1.5 FLASH TỰ SOẠN</span>
+                </span>
+              ) : currentPrompt.source === 'custom' ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-400 text-slate-950 text-xs font-black uppercase rounded-xl border-2 border-slate-900 shadow-pop-sm">
+                  <span>📬 HÒM THƯ BÍ MẬT CỦA BẠN BÈ</span>
+                </span>
+              ) : currentPrompt.source === 'fallback' ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-cyan-300 text-slate-950 text-xs font-black uppercase rounded-xl border-2 border-slate-900 shadow-pop-sm">
+                  <span>🎲 TẠO NGẪU NHIÊN TỰ ĐỘNG</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-200 text-slate-800 text-xs font-black uppercase rounded-xl border-2 border-slate-900 shadow-pop-sm">
+                  <span>📜 CÁO TRẠNG KINH ĐIỂN</span>
+                </span>
+              )}
             </div>
             <h2 className="text-xl md:text-3xl font-black text-slate-900 font-display mb-3 leading-snug">
               &ldquo;{currentPrompt.scenario}&rdquo;

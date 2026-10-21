@@ -60,6 +60,13 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
   const [isGeneratingAiPrompt, setIsGeneratingAiPrompt] = useState(false);
   const [geminiKeyInput, setGeminiKeyInput] = useState(gameState.geminiApiKey || '');
   const [showAiSettings, setShowAiSettings] = useState(false);
+  const [isTestingAi, setIsTestingAi] = useState(false);
+  const [aiTestResult, setAiTestResult] = useState<{
+    scenario: string;
+    title: string;
+    source: string;
+    authorName?: string;
+  } | null>(null);
   const [isMuted, setIsMuted] = useState(partyAudio.getMuted());
   const [isBgmPlaying, setIsBgmPlaying] = useState(false);
   const [showRulesModal, setShowRulesModal] = useState(false);
@@ -464,18 +471,29 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
 
           {/* Optional Gemini API Key Drawer Toggle */}
           <div className="pt-2 border-t border-slate-200">
-            <button
-              type="button"
-              onClick={() => setShowAiSettings(!showAiSettings)}
-              className="text-[11px] font-black uppercase text-purple-700 hover:underline flex items-center gap-1"
-            >
-              [ ⚙️ CẤU HÌNH GOOGLE GEMINI API KEY (TÙY CHỌN) ]
-            </button>
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setShowAiSettings(!showAiSettings)}
+                className="text-[11px] font-black uppercase text-purple-700 hover:underline flex items-center gap-1"
+              >
+                [ ⚙️ CẤU HÌNH GOOGLE GEMINI API KEY (TÙY CHỌN) ]
+              </button>
+              {gameState.geminiApiKey ? (
+                <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-400">
+                  ● ĐÃ KÍCH HOẠT
+                </span>
+              ) : (
+                <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                  Chế độ dự phòng
+                </span>
+              )}
+            </div>
 
             {showAiSettings && (
-              <div className="mt-2 p-3 bg-purple-50 border border-purple-800 rounded-xl space-y-2">
+              <div className="mt-2 p-3 bg-purple-50 border border-purple-800 rounded-xl space-y-2.5">
                 <span className="text-[10px] text-slate-700 block font-medium">
-                  Nhập API Key Google Gemini (nếu có) để AI tự động sáng tạo cáo trạng vô hạn:
+                  Nhập API Key Google Gemini để AI tự động sáng tạo cáo trạng vô hạn (hoặc cài biến môi trường <code className="font-bold">GEMINI_API_KEY</code> trên Vercel):
                 </span>
                 <div className="flex gap-2">
                   <input
@@ -491,11 +509,63 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
                       onSetGeminiApiKey(geminiKeyInput);
                       partyAudio.playCardPlay();
                     }}
-                    className="px-3 py-1 bg-purple-600 text-white font-black text-xs rounded-lg border border-slate-900"
+                    className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white font-black text-xs rounded-lg border border-slate-900 shadow-pop-sm"
                   >
-                    Lưu
+                    Lưu Key
                   </button>
                 </div>
+
+                {/* Test Ping Gemini Button */}
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    disabled={isTestingAi}
+                    onClick={async () => {
+                      setIsTestingAi(true);
+                      setAiTestResult(null);
+                      try {
+                        const res = await fetch('/api/gemini/generate-prompt', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ apiKey: geminiKeyInput || gameState.geminiApiKey }),
+                        });
+                        if (res.ok) {
+                          const data = await res.json();
+                          setAiTestResult({
+                            scenario: data.scenario,
+                            title: data.title,
+                            source: data.source || 'gemini',
+                            authorName: data.authorName || 'Google Gemini 1.5 Flash',
+                          });
+                        }
+                      } catch (e) {
+                        console.error('Test AI error:', e);
+                      } finally {
+                        setIsTestingAi(false);
+                      }
+                    }}
+                    className="w-full py-1.5 bg-yellow-300 hover:bg-yellow-400 disabled:opacity-50 text-slate-950 font-black text-[11px] uppercase rounded-lg border border-slate-900 shadow-pop-sm transition-transform active:translate-y-0.5"
+                  >
+                    {isTestingAi ? 'ĐANG KẾT NỐI VÀ KIỂM TRA GEMINI...' : '[ 🧪 BẤM ĐỂ THỬ XEM GEMINI ĐÃ CHẠY CHƯA ]'}
+                  </button>
+                </div>
+
+                {/* Display Test Result if available */}
+                {aiTestResult && (
+                  <div className="p-2.5 bg-white border-2 border-purple-900 rounded-xl space-y-1 animate-fade-in shadow-pop-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase text-purple-800">
+                        {aiTestResult.source === 'gemini' ? '✨ GEMINI ĐÃ SẴN SÀNG!' : '🎲 CHẾ ĐỘ TỰ SINH DỰ PHÒNG'}
+                      </span>
+                      <span className="text-[9px] font-mono text-slate-500">
+                        {aiTestResult.authorName}
+                      </span>
+                    </div>
+                    <p className="text-xs font-bold text-slate-900 leading-snug">
+                      &ldquo;{aiTestResult.scenario}&rdquo;
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>

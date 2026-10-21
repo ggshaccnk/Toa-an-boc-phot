@@ -99,9 +99,14 @@ Yêu cầu định dạng bắt buộc là JSON thuần túy (không markdown, k
               scenario: parsed.scenario,
               dramaticTag: parsed.dramaticTag || 'Tội Danh: Khó Dung Thứ',
               penalties: parsed.penalties || FALLBACK_PENALTIES.slice(0, 3),
+              source: 'gemini',
+              authorName: 'Google Gemini 1.5 Flash',
               isAiGenerated: true,
             });
           }
+        } else {
+          const errBody = await res.text();
+          console.warn('Gemini API returned non-OK status:', res.status, errBody);
         }
       } catch (geminiErr) {
         console.warn('Gemini API call failed, falling back to algorithmic generator:', geminiErr);
@@ -122,6 +127,8 @@ Yêu cầu định dạng bắt buộc là JSON thuần túy (không markdown, k
       scenario: `${who} ${action}?`,
       dramaticTag: `Tội Danh: Gây Rạn Nứt Tình Bạn`,
       penalties: shuffledPenalties.slice(0, 3),
+      source: 'fallback',
+      authorName: 'Hệ Thống Phối Tình Huống',
       isAiGenerated: false,
     });
   } catch (err: any) {

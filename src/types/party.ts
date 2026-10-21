@@ -40,6 +40,7 @@ export interface AccusationPrompt {
   penalties: string[];
   authorName?: string; // If submitted by a player or AI
   isAiGenerated?: boolean;
+  source?: 'gemini' | 'custom' | 'fallback' | 'static';
 }
 
 export interface Player {
