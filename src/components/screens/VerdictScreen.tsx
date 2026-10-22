@@ -137,6 +137,23 @@ export const VerdictScreen: React.FC<VerdictScreenProps> = ({
             </div>
           )}
 
+          {/* In ARTIST Mode: Exhibit the convict's incriminating sketch */}
+          {gameState.gameMode === 'ARTIST' && convicted.sketchData && (
+            <div className="p-3 bg-white border-2 border-slate-900 rounded-2xl max-w-xs mx-auto shadow-pop-sm text-center">
+              <span className="text-[10px] font-black uppercase text-slate-600 block mb-1">
+                Tang chứng hội họa không thể chối cãi:
+              </span>
+              <div className="w-44 h-44 mx-auto aspect-square rounded-xl overflow-hidden border-2 border-slate-900 bg-[#fdfbf7] p-1">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={convicted.sketchData}
+                  alt={`Tranh của ${convicted.name}`}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            </div>
+          )}
+
           {/* THE MEME PENALTY BOX */}
           <div className="p-5 md:p-6 bg-paper-cream border-[2.5px] border-slate-900 rounded-2xl max-w-xl mx-auto shadow-pop text-left space-y-2">
             <div className="flex items-center gap-2">

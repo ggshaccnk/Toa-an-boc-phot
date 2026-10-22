@@ -6,7 +6,6 @@ import { DoodleAvatar } from '@/components/common/DoodleAvatar';
 import { DoodleClock, RubberStamp, WashiTape } from '@/components/common/HandDoodles';
 import { IconSearch } from '@/components/common/FlatIcons';
 import { partyAudio } from '@/lib/partyAudio';
-import { FUNNY_GUESS_SUGGESTIONS } from '@/lib/botArtist';
 
 interface ArtistGuessScreenProps {
   localPlayer: Player;
@@ -36,15 +35,6 @@ export const ArtistGuessScreen: React.FC<ArtistGuessScreenProps> = ({
   const guessedCount = gameState.players.filter((p) => !!p.guessedAction).length;
   const allGuessed = guessedCount === gameState.players.length;
 
-  const handleRandomSuggestion = () => {
-    partyAudio.playCardHover();
-    const randomPick =
-      FUNNY_GUESS_SUGGESTIONS[
-        Math.floor(Math.random() * FUNNY_GUESS_SUGGESTIONS.length)
-      ];
-    setGuessInput(randomPick);
-  };
-
   const handleConfirmGuess = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const clean = guessInput.trim();
@@ -64,8 +54,10 @@ export const ArtistGuessScreen: React.FC<ArtistGuessScreenProps> = ({
             <span className="text-[10px] text-purple-950">[ĐOÁN MÒ LỜI KHAI]</span>
           </div>
           <span className="text-xs md:text-sm font-black text-slate-800 uppercase tracking-tight">
-            {hasGuessed
-              ? '✓ BẠN ĐÃ NỘP LỜI KHAI &bull; CHỜ MỞ TÒA'
+            {allGuessed
+              ? '✓ TẤT CẢ ĐÃ NỘP XONG • CHỜ CHỦ TỌA MỞ TÒA ĐỐI CHẤT'
+              : hasGuessed
+              ? '✓ BẠN ĐÃ NỘP LỜI KHAI • CHỜ CÁC NHÂN CHỨNG KHÁC'
               : 'NHÂN CHỨNG: BẠN ĐOÁN XEM TÊN NÀY ĐANG VẼ GÌ?'}
           </span>
         </div>
@@ -175,39 +167,41 @@ export const ArtistGuessScreen: React.FC<ArtistGuessScreenProps> = ({
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleConfirmGuess} className="space-y-3">
+              <form onSubmit={handleConfirmGuess} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-black uppercase text-slate-800 mb-1">
-                    Theo bạn, tên này lúc đó ĐANG LÀM GÌ để chối tội?
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-black uppercase text-slate-800">
+                      Theo bạn, tên này lúc đó ĐANG LÀM GÌ để chối tội?
+                    </label>
+                    <span className="text-[10px] font-bold text-slate-400">
+                      {guessInput.length}/120 ký tự
+                    </span>
+                  </div>
                   <textarea
-                    rows={3}
+                    rows={4}
+                    maxLength={120}
                     value={guessInput}
                     onChange={(e) => setGuessInput(e.target.value)}
-                    placeholder="Ví dụ: Đang cầm gậy định đi ăn trộm chó, đang trốn nợ dưới gầm giường..."
-                    className="w-full p-3 text-xs md:text-sm font-bold bg-slate-50 border-2 border-slate-900 rounded-2xl shadow-pop-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    placeholder="Tự ghi lại suy đoán của bạn: Ví dụ: Đang trèo tường trốn nợ, đang giấu tang vật vào nồi cơm, đang giả vờ hóa đá..."
+                    className="w-full p-3.5 text-xs md:text-sm font-bold bg-slate-50 hover:bg-white border-2 border-slate-900 rounded-2xl shadow-pop-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all resize-none leading-relaxed"
+                    autoFocus
                   />
+                  <p className="text-[11px] text-slate-500 mt-1 italic">
+                    * Lời khai của bạn sẽ được Tòa Án đọc to trước toàn thể phòng xét xử!
+                  </p>
                 </div>
 
-                <div className="flex items-center justify-between gap-2">
-                  <button
-                    type="button"
-                    onClick={handleRandomSuggestion}
-                    className="px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 border-2 border-slate-900 rounded-xl text-xs font-black text-slate-900 shadow-pop-sm transition-transform active:translate-y-0.5 cursor-pointer"
-                  >
-                    [ GỢI Ý BỰA ]
-                  </button>
-
+                <div className="pt-1">
                   <button
                     type="submit"
                     disabled={!guessInput.trim()}
-                    className={`px-4 py-2 rounded-xl border-2 border-slate-900 font-black text-xs uppercase shadow-pop-sm transition-all ${
+                    className={`w-full py-3 rounded-2xl border-2 border-slate-900 font-black text-xs md:text-sm uppercase tracking-wide shadow-pop transition-all flex items-center justify-center gap-2 ${
                       guessInput.trim()
-                        ? 'bg-purple-600 hover:bg-purple-700 text-white cursor-pointer active:translate-y-0.5'
+                        ? 'bg-purple-600 hover:bg-purple-700 text-white cursor-pointer active:translate-y-0.5 shadow-pop-md'
                         : 'bg-slate-200 text-slate-400 cursor-not-allowed border-slate-400'
                     }`}
                   >
-                    [ NỘP LỜI KHAI CHO TÒA ]
+                    <span>[ NỘP LỜI KHAI VÀO HỒ SƠ TÒA ]</span>
                   </button>
                 </div>
               </form>

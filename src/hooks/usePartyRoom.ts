@@ -995,7 +995,7 @@ export function usePartyRoom() {
     [localPlayer.isHost, syncStateAndBroadcast]
   );
 
-  // Auto transition from ARTIST_DRAW to ARTIST_GUESS on timer expiry (Host only)
+  // Auto transition from ARTIST_DRAW to ARTIST_GUESS on timer expiry or when all submitted (Host only)
   useEffect(() => {
     if (
       gameState.phase === 'ARTIST_DRAW' &&
@@ -1013,7 +1013,26 @@ export function usePartyRoom() {
     startArtistGuessPhase,
   ]);
 
-  // Auto transition from ARTIST_GUESS to ARTIST_EXHIBIT on timer expiry (Host only)
+  useEffect(() => {
+    if (
+      gameState.phase === 'ARTIST_DRAW' &&
+      gameState.players.length > 0 &&
+      gameState.players.every((p) => !!p.sketchData) &&
+      localPlayer.isHost
+    ) {
+      const timer = setTimeout(() => {
+        startArtistGuessPhase();
+      }, 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [
+    gameState.phase,
+    gameState.players,
+    localPlayer.isHost,
+    startArtistGuessPhase,
+  ]);
+
+  // Auto transition from ARTIST_GUESS to ARTIST_EXHIBIT on timer expiry or when all guessed (Host only)
   useEffect(() => {
     if (
       gameState.phase === 'ARTIST_GUESS' &&
@@ -1027,6 +1046,25 @@ export function usePartyRoom() {
     gameState.phase,
     gameState.phaseTimer,
     gameState.timerActive,
+    localPlayer.isHost,
+    startArtistExhibitPhase,
+  ]);
+
+  useEffect(() => {
+    if (
+      gameState.phase === 'ARTIST_GUESS' &&
+      gameState.players.length > 0 &&
+      gameState.players.every((p) => !!p.guessedAction) &&
+      localPlayer.isHost
+    ) {
+      const timer = setTimeout(() => {
+        startArtistExhibitPhase();
+      }, 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [
+    gameState.phase,
+    gameState.players,
     localPlayer.isHost,
     startArtistExhibitPhase,
   ]);
