@@ -87,6 +87,8 @@ export interface GameState {
   timerActive: boolean;
   players: Player[];
   convictedPlayerId: string | null;
+  convictedPlayerIds?: string[];
+  isTieVote?: boolean;
   voteResults: Record<string, number>; // playerId -> vote count
   chaosAnnouncements: string[];
   screenShaking: boolean;

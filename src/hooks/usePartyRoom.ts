@@ -1166,57 +1166,78 @@ export function usePartyRoom() {
         }
       });
 
-      let maxVotes = -1;
-      let culpritId: string | null = null;
-      Object.entries(votes).forEach(([pId, count]) => {
+      // Find the maximum number of votes received
+      let maxVotes = 0;
+      Object.values(votes).forEach((count) => {
         if (count > maxVotes) {
           maxVotes = count;
-          culpritId = pId;
         }
       });
 
-      if (!culpritId && prev.players.length > 0) {
-        culpritId = prev.players[0].id;
+      // Collect all culprits who received maxVotes (Tie Handling)
+      let culpritIds: string[] = [];
+      if (maxVotes === 0) {
+        // If nobody voted, pick the first player
+        culpritIds = prev.players.length > 0 ? [prev.players[0].id] : [];
+      } else {
+        culpritIds = Object.entries(votes)
+          .filter(([_, count]) => count === maxVotes)
+          .map(([pId]) => pId);
       }
+
+      const isTieVote = culpritIds.length > 1;
 
       const chaosMessages: string[] = [];
       const prompt = prev.currentPrompt;
       const penalty =
         prompt?.penalties[Math.floor(Math.random() * prompt.penalties.length)] ||
-        'Phải thừa nhận mình là kẻ ngốc nhất bàn!';
+        'Phải thừa nhận mình là kẻ ngốc nhất bàn và tự giác làm trò hề!';
 
-      const culprit = prev.players.find((p) => p.id === culpritId);
-      let finalGuiltyId = culpritId;
-
-      if (culprit?.activeModifier === 'REFLECT') {
+      if (isTieVote) {
+        const tiedNames = prev.players
+          .filter((p) => culpritIds.includes(p.id))
+          .map((p) => p.name)
+          .join(' & ');
         chaosMessages.push(
-          `[GƯƠNG PHẢN CHIẾU] ${culprit.name} phản đòn! Kẻ vote ${culprit.name} bị dính phạt!`
+          `[HÒA PHIẾU BẤT PHÂN THẮNG BẠI] ${tiedNames} cùng nhận số phiếu ngang nhau (${maxVotes} phiếu)! Tòa phán quyết: ĐỒNG PHẠM CÙNG LÃNH ÁN!`
         );
-      } else if (culprit?.activeModifier === 'BOMB_BLAST') {
-        chaosMessages.push(
-          `[BOM NỔ CHẬM] ${culprit.name} kích hoạt bom khiến các bị cáo lân cận dính miểng phạt!`
-        );
-      } else if (culprit?.activeModifier === 'SWAP_VOTES') {
-        const others = prev.players.filter((p) => p.id !== culprit.id);
-        const scapegoat = others[0] || others[others.length - 1];
-        if (scapegoat) {
-          finalGuiltyId = scapegoat.id;
-          chaosMessages.push(
-            `[TRÁO ĐỔI HỒ SƠ] ${culprit.name} tẩu thoát, chuyển giao ghế bị cáo cho ${scapegoat.name}!`
-          );
-        }
-      } else if (culprit?.activeModifier === 'LINK_PUPPET') {
-        const others = prev.players.filter((p) => p.id !== culprit.id);
-        const scapegoat = others[Math.floor(Math.random() * others.length)];
-        if (scapegoat) {
-          chaosMessages.push(
-            `[KÉO ĐỒNG BỌN] ${culprit.name} kéo theo ${scapegoat.name} cùng chịu chung án phạt!`
-          );
-        }
       }
 
+      // Check chaos modifiers for all culprits
+      let finalGuiltyIds = [...culpritIds];
+      culpritIds.forEach((cId) => {
+        const culprit = prev.players.find((p) => p.id === cId);
+        if (culprit?.activeModifier === 'REFLECT') {
+          chaosMessages.push(
+            `[GƯƠNG PHẢN CHIẾU] ${culprit.name} phản đòn! Kẻ vote ${culprit.name} bị dính phạt!`
+          );
+        } else if (culprit?.activeModifier === 'BOMB_BLAST') {
+          chaosMessages.push(
+            `[BOM NỔ CHẬM] ${culprit.name} kích hoạt bom khiến các bị cáo lân cận dính miểng phạt!`
+          );
+        } else if (culprit?.activeModifier === 'SWAP_VOTES') {
+          const others = prev.players.filter((p) => !culpritIds.includes(p.id));
+          const scapegoat = others[0] || others[others.length - 1];
+          if (scapegoat) {
+            finalGuiltyIds = finalGuiltyIds.filter((id) => id !== cId).concat(scapegoat.id);
+            chaosMessages.push(
+              `[TRÁO ĐỔI HỒ SƠ] ${culprit.name} tẩu thoát, chuyển giao ghế bị cáo cho ${scapegoat.name}!`
+            );
+          }
+        } else if (culprit?.activeModifier === 'LINK_PUPPET') {
+          const others = prev.players.filter((p) => !culpritIds.includes(p.id));
+          const scapegoat = others[Math.floor(Math.random() * others.length)];
+          if (scapegoat && !finalGuiltyIds.includes(scapegoat.id)) {
+            finalGuiltyIds.push(scapegoat.id);
+            chaosMessages.push(
+              `[KÉO ĐỒNG BỌN] ${culprit.name} kéo theo ${scapegoat.name} cùng chịu chung án phạt!`
+            );
+          }
+        }
+      });
+
       const updatedPlayers = prev.players.map((p) => {
-        const isConvicted = p.id === finalGuiltyId;
+        const isConvicted = finalGuiltyIds.includes(p.id);
         return {
           ...p,
           guiltScore: isConvicted ? p.guiltScore + 1 : p.guiltScore,
@@ -1228,13 +1249,19 @@ export function usePartyRoom() {
 
       setTimeout(() => {
         partyAudio.playBustedBuzzer();
-        sendReaction('DÍNH CHẤU!', 'Hội Đồng');
+        sendReaction(isTieVote ? 'CẢ HAI CÙNG DÍNH!' : 'DÍNH CHẤU!', 'Hội Đồng');
       }, 500);
+
+      const convictedPlayersList = prev.players.filter((p) => finalGuiltyIds.includes(p.id));
+      const convictedDisplayName =
+        convictedPlayersList.length > 0
+          ? convictedPlayersList.map((p) => p.name).join(' & ')
+          : 'Không rõ';
 
       const historyItem = {
         round: prev.round,
         promptTitle: prev.currentPrompt?.title || 'Vụ án bí ẩn',
-        convictedName: culprit?.name || 'Không rõ',
+        convictedName: convictedDisplayName,
         penalty,
       };
 
@@ -1243,7 +1270,9 @@ export function usePartyRoom() {
         phase: 'VERDICT',
         phaseTimer: 0,
         timerActive: false,
-        convictedPlayerId: finalGuiltyId,
+        convictedPlayerId: finalGuiltyIds[0] || null,
+        convictedPlayerIds: finalGuiltyIds,
+        isTieVote: finalGuiltyIds.length > 1,
         voteResults: votes,
         chaosAnnouncements: chaosMessages,
         players: updatedPlayers,

@@ -24,19 +24,26 @@ export const VerdictScreen: React.FC<VerdictScreenProps> = ({
 }) => {
   const [penaltyDone, setPenaltyDone] = useState(false);
 
-  const convicted = gameState.players.find(
-    (p) => p.id === gameState.convictedPlayerId
+  const isTieVote = !!gameState.isTieVote;
+  const convictedIds =
+    gameState.convictedPlayerIds ||
+    (gameState.convictedPlayerId ? [gameState.convictedPlayerId] : []);
+  const convictedPlayers = gameState.players.filter((p) =>
+    convictedIds.includes(p.id)
   );
+
+  const convicted = convictedPlayers[0] || null;
+  const isCulpritMe = convictedPlayers.some((p) => p.id === localPlayer.id);
+
   const voteCount = convicted
     ? gameState.voteResults[convicted.id] || 0
     : 0;
 
-  const isCulpritMe = convicted?.id === localPlayer.id;
   const isFinalRound = gameState.round >= gameState.maxRounds;
 
-  // Find who voted for the culprit (especially exciting in Shadow Mode!)
+  // Find who voted for the culprits (especially exciting in Shadow Mode!)
   const whoVotedForCulprit = gameState.players.filter(
-    (p) => p.voteTargetId === convicted?.id
+    (p) => p.voteTargetId && convictedIds.includes(p.voteTargetId)
   );
 
   return (
@@ -93,25 +100,63 @@ export const VerdictScreen: React.FC<VerdictScreenProps> = ({
         >
           {/* Top Stamp Label */}
           <div className="inline-block px-4 py-1.5 bg-rose-600 text-white font-black text-sm md:text-base uppercase tracking-widest rounded-xl border-2 border-slate-900 shadow-pop-red animate-stamp-in">
-            [ THỦ PHẠM CHÍNH THỨC CỦA VỤ ÁN ]
+            {isTieVote
+              ? '[ HÒA PHIẾU: ĐỒNG THỦ PHẠM CÙNG LÃNH ÁN ]'
+              : '[ THỦ PHẠM CHÍNH THỨC CỦA VỤ ÁN ]'}
           </div>
 
-          {/* Big Convicted Avatar & Name */}
-          <div className="flex flex-col items-center justify-center my-2">
-            <div className="relative">
-              <DoodleAvatar
-                avatarId={convicted.avatarId}
-                size="xl"
-                isBusted={true}
-              />
+          {/* If Tie Vote: Showcase all convicted suspects together */}
+          {isTieVote && convictedPlayers.length > 1 ? (
+            <div className="space-y-3">
+              <p className="text-xs md:text-sm font-bold text-rose-600">
+                Hội đồng xét xử bất phân thắng bại! Cả {convictedPlayers.length} bị cáo đều nhận số phiếu cao nhất ({voteCount} phiếu):
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-4 my-3">
+                {convictedPlayers.map((cp) => (
+                  <div
+                    key={cp.id}
+                    className="flex flex-col items-center p-4 bg-rose-50 border-2 border-slate-900 rounded-3xl shadow-pop min-w-[200px] max-w-[240px]"
+                  >
+                    <DoodleAvatar avatarId={cp.avatarId} size="lg" isBusted={true} />
+                    <h3 className="text-lg md:text-xl font-black text-slate-900 font-display mt-2">
+                      {cp.name} {cp.id === localPlayer.id && '(Bạn!)'}
+                    </h3>
+                    <span className="text-xs font-black text-rose-700 bg-white px-2.5 py-0.5 rounded-lg border border-rose-300 mt-1">
+                      {gameState.voteResults[cp.id] || 0} PHIẾU BẦU
+                    </span>
+
+                    {gameState.gameMode === 'ARTIST' && cp.sketchData && (
+                      <div className="w-28 h-28 mt-2 rounded-xl overflow-hidden border-2 border-slate-900 bg-[#fdfbf7] p-1">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={cp.sketchData}
+                          alt={`Tranh của ${cp.name}`}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-            <h3 className="text-2xl md:text-3xl font-black text-slate-900 font-display mt-3">
-              {convicted.name} {isCulpritMe && '(Chính Bạn!)'}
-            </h3>
-            <p className="text-xs md:text-sm font-bold text-rose-600 mt-1">
-              Bị kết án với áp đảo <span className="font-black text-base font-mono">{voteCount}</span> phiếu bầu từ hội đồng!
-            </p>
-          </div>
+          ) : (
+            /* Single Convicted Avatar & Name */
+            <div className="flex flex-col items-center justify-center my-2">
+              <div className="relative">
+                <DoodleAvatar
+                  avatarId={convicted.avatarId}
+                  size="xl"
+                  isBusted={true}
+                />
+              </div>
+              <h3 className="text-2xl md:text-3xl font-black text-slate-900 font-display mt-3">
+                {convicted.name} {isCulpritMe && '(Chính Bạn!)'}
+              </h3>
+              <p className="text-xs md:text-sm font-bold text-rose-600 mt-1">
+                Bị kết án với áp đảo <span className="font-black text-base font-mono">{voteCount}</span> phiếu bầu từ hội đồng!
+              </p>
+            </div>
+          )}
 
           {/* In Shadow Mode: Reveal who voted for them */}
           {gameState.gameMode === 'SHADOW' && whoVotedForCulprit.length > 0 && (
@@ -137,8 +182,8 @@ export const VerdictScreen: React.FC<VerdictScreenProps> = ({
             </div>
           )}
 
-          {/* In ARTIST Mode: Exhibit the convict's incriminating sketch */}
-          {gameState.gameMode === 'ARTIST' && convicted.sketchData && (
+          {/* In ARTIST Mode: Exhibit the convict's incriminating sketch (Single mode) */}
+          {gameState.gameMode === 'ARTIST' && convicted.sketchData && convictedPlayers.length === 1 && (
             <div className="p-3 bg-white border-2 border-slate-900 rounded-2xl max-w-xs mx-auto shadow-pop-sm text-center">
               <span className="text-[10px] font-black uppercase text-slate-600 block mb-1">
                 Tang chứng hội họa không thể chối cãi:
@@ -157,7 +202,14 @@ export const VerdictScreen: React.FC<VerdictScreenProps> = ({
           {/* THE MEME PENALTY BOX */}
           <div className="p-5 md:p-6 bg-paper-cream border-[2.5px] border-slate-900 rounded-2xl max-w-xl mx-auto shadow-pop text-left space-y-2">
             <div className="flex items-center gap-2">
-              <RubberStamp text="HÌNH PHẠT BẮT BUỘC THỰC HIỆN NGAY" color="red" />
+              <RubberStamp
+                text={
+                  isTieVote
+                    ? `CẢ ${convictedPlayers.map((p) => p.name).join(' & ')} CÙNG THỰC HIỆN`
+                    : 'HÌNH PHẠT BẮT BUỘC THỰC HIỆN NGAY'
+                }
+                color="red"
+              />
             </div>
 
             <p className="text-base md:text-lg font-black text-slate-950 leading-relaxed font-display bg-white p-3.5 rounded-xl border-2 border-slate-900 shadow-pop-sm">

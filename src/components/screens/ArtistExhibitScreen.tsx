@@ -40,9 +40,9 @@ export const ArtistExhibitScreen: React.FC<ArtistExhibitScreenProps> = ({
   const authorPlayer = gameState.players[currentIndex] || gameState.players[0];
 
   // The player who guessed what authorPlayer was doing
-  const witnessPlayer = gameState.players.find(
-    (p) => p.targetSketchPlayerId === authorPlayer?.id
-  );
+  const witnessPlayer =
+    gameState.players.find((p) => p.targetSketchPlayerId === authorPlayer?.id) ||
+    gameState.players.find((p) => p.id !== authorPlayer?.id);
 
   const isLastExhibit = currentIndex >= totalPlayers - 1;
   const isMeAuthor = authorPlayer?.id === localPlayer.id;
@@ -63,11 +63,11 @@ export const ArtistExhibitScreen: React.FC<ArtistExhibitScreenProps> = ({
   const handleSpeakCurrentTestimony = useCallback(() => {
     if (!authorPlayer) return;
 
-    const witnessName = witnessPlayer?.name || 'Nhân chứng ẩn danh';
+    const witnessName = witnessPlayer?.name || 'Nhân chứng';
     const authorName = authorPlayer.name;
     const guessText =
       witnessPlayer?.guessedAction ||
-      'Hắn đang lén lút làm việc phi pháp không dám khai nhận!';
+      'Đang làm hành động mờ ám khả nghi không dám khai nhận!';
 
     partyAudio.playGavelStrike();
 
@@ -290,19 +290,19 @@ export const ArtistExhibitScreen: React.FC<ArtistExhibitScreenProps> = ({
               {/* The Quoted Guess */}
               <div className="space-y-2">
                 <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 block">
-                  NHÂN CHỨNG NHÌN TRANH VÀ TỐ CÁO:
+                  NHÂN CHỨNG NHÌN TRANH VÀ ĐOÁN HÀNH ĐỘNG:
                 </span>
                 <div
                   className={`p-4 rounded-2xl border-2 transition-all relative ${
                     isSpeaking
-                      ? 'bg-rose-100 border-rose-500 shadow-sm'
+                      ? 'bg-rose-100 border-rose-500 shadow-md ring-2 ring-rose-400'
                       : 'bg-rose-50 border-rose-300'
                   }`}
                 >
                   <p className="text-lg md:text-xl font-black text-rose-700 font-display leading-relaxed italic">
                     &ldquo;
                     {witnessPlayer?.guessedAction ||
-                      'Hắn đang làm điều mờ ám phi pháp không dám khai nhận!'}
+                      'Đang vẽ hình thù khả nghi không dám khai nhận!'}
                     &rdquo;
                   </p>
                 </div>
@@ -326,11 +326,11 @@ export const ArtistExhibitScreen: React.FC<ArtistExhibitScreenProps> = ({
                   <div className="overflow-hidden">
                     <span className="text-[11px] font-black uppercase text-purple-950 block">
                       {isSpeaking
-                        ? 'ĐANG ĐỌC LỜI KHAI TRƯỚC TÒA...'
+                        ? 'GOOGLE ĐANG ĐỌC LỜI ĐOÁN...'
                         : 'GOOGLE TEXT TO SPEECH'}
                     </span>
                     <span className="text-[10px] text-purple-800 font-bold block truncate">
-                      Giọng đọc pháp đình tiếng Việt
+                      Đọc to lời đoán của {witnessPlayer?.name || 'nhân chứng'}
                     </span>
                   </div>
                 </div>
@@ -350,7 +350,7 @@ export const ArtistExhibitScreen: React.FC<ArtistExhibitScreenProps> = ({
                   ) : (
                     <>
                       <IconVolume className="w-3.5 h-3.5" />
-                      <span>🔊 PHÁT LỜI KHAI</span>
+                      <span>🔊 ĐỌC LỜI ĐOÁN</span>
                     </>
                   )}
                 </button>
