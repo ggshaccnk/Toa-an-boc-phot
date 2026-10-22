@@ -501,7 +501,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
             {showAiSettings && (
               <div className="mt-2 p-3 bg-purple-50 border border-purple-800 rounded-xl space-y-2.5">
                 <span className="text-[10px] text-slate-700 block font-medium">
-                  Nhập API Key Google Gemini để AI tự động sáng tạo cáo trạng vô hạn (hoặc cài biến môi trường <code className="font-bold">GEMINI_API_KEY</code> trên Vercel):
+                  Nhập API Key Google Gemini (miễn phí) để AI tự tạo cáo trạng vô hạn, và kích hoạt <strong>BOT AI THỰC SỰ VẼ TRANH &amp; DÙNG THỊ GIÁC AI (VISION) NHÌN TRANH ĐỂ ĐOÁN</strong>:
                 </span>
                 <div className="flex gap-2">
                   <input
@@ -652,9 +652,9 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
                   type="button"
                   onClick={onAddBot}
                   disabled={gameState.players.length >= 8}
-                  className="flex-1 py-2 px-3 bg-blue-100 hover:bg-blue-200 disabled:opacity-50 text-blue-950 font-black text-xs uppercase border-2 border-slate-900 rounded-xl shadow-pop-sm flex items-center justify-center gap-1.5 transition-transform active:translate-y-0.5"
+                  className="flex-1 py-2 px-3 bg-purple-100 hover:bg-purple-200 disabled:opacity-50 text-purple-950 font-black text-xs uppercase border-2 border-slate-900 rounded-xl shadow-pop-sm flex items-center justify-center gap-1.5 transition-transform active:translate-y-0.5 cursor-pointer"
                 >
-                  + THÊM BOT LẬP DỊ (AI)
+                  <span>🤖 + THÊM BOT AI (GEMINI VẼ &amp; ĐOÁN)</span>
                 </button>
               ) : (
                 <div className="flex-1 py-2 px-3 bg-slate-100 border-2 border-slate-900 rounded-xl text-center text-xs font-bold text-slate-700">

@@ -752,6 +752,34 @@ export function usePartyRoom() {
               }
               return p;
             });
+
+            // Asynchronously invoke Google Gemini API so each bot REALLY DRAWS a custom doodle
+            prev.players.forEach((p) => {
+              if (p.isBot) {
+                fetch('/api/gemini/bot-draw', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    scenario: finalPrompt.scenario,
+                    botName: p.name,
+                    apiKey: prev.geminiApiKey,
+                  }),
+                })
+                  .then((res) => res.json())
+                  .then((data) => {
+                    if (data.sketchData) {
+                      syncStateAndBroadcast((s) => ({
+                        ...s,
+                        players: s.players.map((pl) =>
+                          pl.id === p.id ? { ...pl, sketchData: data.sketchData } : pl
+                        ),
+                      }));
+                    }
+                  })
+                  .catch(() => {});
+              }
+            });
+
             return {
               ...prev,
               players: updatedWithBots,
@@ -954,6 +982,38 @@ export function usePartyRoom() {
           targetSketchPlayerId: targetId,
           guessedAction: botGuess,
         };
+      });
+
+      // Asynchronously invoke Gemini Multimodal Vision so each bot REALLY GUESSES what was drawn
+      updatedPlayers.forEach((p) => {
+        if (p.isBot) {
+          const targetPlayer = prev.players.find((tp) => tp.id === p.targetSketchPlayerId);
+          if (targetPlayer?.sketchData) {
+            fetch('/api/gemini/bot-guess', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                imageBase64: targetPlayer.sketchData,
+                scenario: prev.currentPrompt?.scenario,
+                botName: p.name,
+                targetName: targetPlayer.name,
+                apiKey: prev.geminiApiKey,
+              }),
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                if (data.guess) {
+                  syncStateAndBroadcast((s) => ({
+                    ...s,
+                    players: s.players.map((pl) =>
+                      pl.id === p.id ? { ...pl, guessedAction: data.guess } : pl
+                    ),
+                  }));
+                }
+              })
+              .catch(() => {});
+          }
+        }
       });
 
       return {

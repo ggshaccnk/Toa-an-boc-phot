@@ -258,8 +258,13 @@ export const ArtistExhibitScreen: React.FC<ArtistExhibitScreenProps> = ({
             <div className="mt-3 flex items-center gap-2 px-3.5 py-2 bg-amber-100 border-2 border-slate-900 rounded-2xl shadow-pop-sm">
               <DoodleAvatar avatarId={authorPlayer?.avatarId || 'cat'} size="sm" />
               <span className="text-xs md:text-sm font-black text-slate-900">
-                Bị cáo đang bị nghi vấn: {authorPlayer?.name} {isMeAuthor && '(Bạn)'}
+                Bị cáo: {authorPlayer?.name} {isMeAuthor && '(Bạn)'}
               </span>
+              {authorPlayer?.isBot && (
+                <span className="px-2 py-0.5 bg-yellow-300 text-[10px] font-black text-slate-950 rounded-lg border border-slate-900 shadow-xs">
+                  🤖 GOOGLE AI VẼ
+                </span>
+              )}
             </div>
           </div>
 
@@ -283,15 +288,27 @@ export const ArtistExhibitScreen: React.FC<ArtistExhibitScreenProps> = ({
                     <span>
                       {witnessPlayer.name} {isMeWitness && '(Bạn)'}
                     </span>
+                    {witnessPlayer.isBot && (
+                      <span className="px-1.5 py-0.5 bg-purple-200 text-[9px] font-black text-purple-950 rounded border border-purple-800">
+                        🤖 AI GEMINI
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
 
               {/* The Quoted Guess */}
               <div className="space-y-2">
-                <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 block">
-                  NHÂN CHỨNG NHÌN TRANH VÀ ĐOÁN HÀNH ĐỘNG:
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 block">
+                    NHÂN CHỨNG NHÌN TRANH VÀ ĐOÁN HÀNH ĐỘNG:
+                  </span>
+                  {witnessPlayer?.isBot && (
+                    <span className="text-[9px] font-black text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-300">
+                      THỊ GIÁC AI (VISION)
+                    </span>
+                  )}
+                </div>
                 <div
                   className={`p-4 rounded-2xl border-2 transition-all relative ${
                     isSpeaking
