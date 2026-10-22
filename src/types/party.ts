@@ -131,7 +131,8 @@ export interface PeerMessage {
     | 'CAST_VOTE'
     | 'NEXT_PHASE'
     | 'EMOTE_REACTION'
-    | 'CHAT_MESSAGE';
+    | 'CHAT_MESSAGE'
+    | 'ROOM_CLOSED';
   payload: any;
   senderId: string;
 }

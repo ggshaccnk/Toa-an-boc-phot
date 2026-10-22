@@ -432,6 +432,13 @@ export function usePartyRoom() {
           }
           break;
 
+        case 'ROOM_CLOSED':
+          setConnectionStatus('idle');
+          setConnectionMessage(data.payload?.message || 'Chủ phòng đã rời khỏi phiên tòa.');
+          partyAudio.stopBGM();
+          partyAudio.playGavelStrike();
+          break;
+
         default:
           break;
       }
@@ -1525,6 +1532,199 @@ export function usePartyRoom() {
     }));
   }, [localPlayer.isHost, syncStateAndBroadcast]);
 
+  // Return whole room to lobby from any phase (Host only)
+  const returnToLobby = useCallback(() => {
+    partyAudio.stopBGM();
+    partyAudio.playGavelStrike();
+    syncStateAndBroadcast((prev) => ({
+      ...prev,
+      phase: 'LOBBY',
+      round: 1,
+      currentPrompt: null,
+      convictedPlayerId: null,
+      voteResults: {},
+      chaosAnnouncements: [],
+      history: [],
+      players: prev.players.map((p) => ({
+        ...p,
+        guiltScore: 0,
+        timesConvicted: 0,
+        playedCard: null,
+        voteTargetId: null,
+        lastVerdict: false,
+        assignedPenalty: null,
+        sketchData: null,
+        targetSketchPlayerId: null,
+        guessedAction: null,
+      })),
+    }));
+  }, [syncStateAndBroadcast]);
+
+  // Leave room or reset completely to home without reloading
+  const leaveRoom = useCallback(async () => {
+    partyAudio.stopBGM();
+    partyAudio.playGavelStrike();
+
+    // If guest: close connection to host
+    if (hostConnRef.current) {
+      try {
+        hostConnRef.current.close();
+      } catch (e) {
+        console.warn('Error closing guest connection:', e);
+      }
+      hostConnRef.current = null;
+    }
+
+    // If host: notify and close guest connections
+    if (localPlayer.isHost && guestConnsRef.current.length > 0) {
+      guestConnsRef.current.forEach((conn) => {
+        try {
+          conn.send({
+            type: 'ROOM_CLOSED',
+            payload: { message: 'Chủ phòng đã rời khỏi phiên tòa.' },
+            senderId: localPlayer.id,
+          });
+          conn.close();
+        } catch (e) {
+          console.warn('Error notifying guest:', e);
+        }
+      });
+      guestConnsRef.current = [];
+    }
+
+    // Destroy current peer
+    if (peerRef.current) {
+      try {
+        peerRef.current.destroy();
+      } catch (e) {
+        console.warn('Error destroying peer:', e);
+      }
+      peerRef.current = null;
+    }
+
+    // Remove ?room= parameter from browser URL without page reload
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', window.location.pathname);
+    }
+
+    const newId = `p-${Math.random().toString(36).substring(2, 8)}`;
+    const newRoomCode = 'BOC-' + Math.floor(100 + Math.random() * 900);
+
+    const freshHostPlayer: Player = {
+      id: newId,
+      name: 'Người chơi 1',
+      avatarId: 'cat_lawyer',
+      isHost: true,
+      isBot: false,
+      isReady: true,
+      hand: [],
+      playedCard: null,
+      voteTargetId: null,
+      activeModifier: null,
+      guiltScore: 0,
+      timesConvicted: 0,
+      lastVerdict: false,
+      assignedPenalty: null,
+      customPrompt: '',
+      sketchData: null,
+      targetSketchPlayerId: null,
+      guessedAction: null,
+    };
+
+    setLocalPlayer(freshHostPlayer);
+    setGameState({
+      roomId: newRoomCode,
+      hostId: newId,
+      gameMode: 'CLASSIC',
+      phase: 'LOBBY',
+      round: 1,
+      maxRounds: ROUNDS_PER_MATCH,
+      currentPrompt: null,
+      phaseTimer: 0,
+      timerActive: false,
+      players: [freshHostPlayer],
+      convictedPlayerId: null,
+      voteResults: {},
+      chaosAnnouncements: [],
+      screenShaking: false,
+      artistExhibitIndex: 0,
+      customPromptsPool: [],
+      usedPromptIds: [],
+      geminiApiKey: '',
+      chatMessages: [],
+      history: [],
+    });
+
+    setJoinCodeInput('');
+    setConnectionStatus('hosting');
+    setConnectionMessage(`Đã làm mới phiên tòa! Sẵn sàng tạo hoặc tham gia phòng mới.`);
+
+    // Re-initialize host P2P
+    setTimeout(async () => {
+      try {
+        const { default: Peer } = await import('peerjs');
+        const cleanRoomId = newRoomCode.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        const hostPeerId = `toa-an-${cleanRoomId}`;
+
+        const peer = new Peer(hostPeerId, {
+          debug: 1,
+          config: {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' },
+              { urls: 'stun:stun2.l.google.com:19302' },
+            ],
+          },
+        });
+
+        peerRef.current = peer;
+
+        peer.on('open', () => {
+          setConnectionStatus('hosting');
+          setConnectionMessage(`Đang làm Chủ Tọa phòng ${newRoomCode}. Sẵn sàng kết nối bạn bè!`);
+        });
+
+        peer.on('connection', (conn) => {
+          conn.on('open', () => {
+            guestConnsRef.current.push(conn);
+            conn.send({
+              type: 'STATE_SYNC',
+              payload: {
+                roomId: newRoomCode,
+                hostId: newId,
+                gameMode: 'CLASSIC',
+                phase: 'LOBBY',
+                round: 1,
+                maxRounds: ROUNDS_PER_MATCH,
+                currentPrompt: null,
+                phaseTimer: 0,
+                timerActive: false,
+                players: [freshHostPlayer],
+                convictedPlayerId: null,
+                voteResults: {},
+                chaosAnnouncements: [],
+                screenShaking: false,
+                artistExhibitIndex: 0,
+                customPromptsPool: [],
+                usedPromptIds: [],
+                geminiApiKey: '',
+                chatMessages: [],
+                history: [],
+              },
+              senderId: newId,
+            });
+          });
+          conn.on('data', (d: any) => handleIncomingMessage(d));
+          conn.on('close', () => {
+            guestConnsRef.current = guestConnsRef.current.filter((c) => c !== conn);
+          });
+        });
+      } catch (err) {
+        console.warn('Re-host error:', err);
+      }
+    }, 300);
+  }, [localPlayer.isHost, localPlayer.id, handleIncomingMessage]);
+
   // Copy full invite link to clipboard (e.g. https://.../?room=BOC-888)
   const copyShareLink = useCallback(() => {
     if (typeof window !== 'undefined') {
@@ -1567,6 +1767,8 @@ export function usePartyRoom() {
     finalizeVerdict,
     nextRoundOrScoreboard,
     resetGame,
+    returnToLobby,
+    leaveRoom,
     copyShareLink,
     startHostingRoom,
     joinRoomAsGuest,

@@ -8,6 +8,7 @@ import { IconGavel } from '@/components/common/FlatIcons';
 interface FloatingEmotesProps {
   reactions: FloatingReaction[];
   onSendReaction: (stickerText: string) => void;
+  rightSlot?: React.ReactNode;
 }
 
 export interface ComicSticker {
@@ -286,6 +287,7 @@ export const COMIC_STICKERS: ComicSticker[] = [
 export const FloatingEmotes: React.FC<FloatingEmotesProps> = ({
   reactions,
   onSendReaction,
+  rightSlot,
 }) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -342,66 +344,75 @@ export const FloatingEmotes: React.FC<FloatingEmotesProps> = ({
         })}
       </div>
 
-      {/* Expanded & Renamed: HỘI ĐỒNG PHẢN ỨNG PHÁP ĐÌNH (Comic Reaction Dock) */}
-      <div className="fixed bottom-3 left-1/2 transform -translate-x-1/2 z-40 w-[96vw] max-w-5xl bg-white/95 backdrop-blur-md border-[2.5px] border-slate-900 rounded-3xl shadow-pop p-2 sm:p-2.5 flex items-center gap-2">
-        {/* Title Badge on the Left */}
-        <div className="hidden lg:flex items-center gap-2 pl-2 pr-3 border-r-2 border-slate-300 shrink-0 select-none">
-          <div className="w-8 h-8 rounded-xl bg-amber-400 border-2 border-slate-900 flex items-center justify-center shadow-pop-sm shrink-0">
-            <IconGavel className="w-4 h-4 text-slate-950" />
+      {/* Expanded & Renamed: HỘI ĐỒNG PHẢN ỨNG PHÁP ĐÌNH (Comic Reaction Dock + Right Slot) */}
+      <div className="fixed bottom-3 left-1/2 transform -translate-x-1/2 z-40 w-[96vw] max-w-5xl flex items-center justify-center gap-2 pointer-events-none">
+        <div className="flex-1 min-w-0 bg-white/95 backdrop-blur-md border-[2.5px] border-slate-900 rounded-3xl shadow-pop p-2 sm:p-2.5 flex items-center gap-2 pointer-events-auto overflow-hidden">
+          {/* Title Badge on the Left */}
+          <div className="hidden lg:flex items-center gap-2 pl-2 pr-3 border-r-2 border-slate-300 shrink-0 select-none">
+            <div className="w-8 h-8 rounded-xl bg-amber-400 border-2 border-slate-900 flex items-center justify-center shadow-pop-sm shrink-0">
+              <IconGavel className="w-4 h-4 text-slate-950" />
+            </div>
+            <div className="text-left leading-tight">
+              <span className="text-[11px] font-black uppercase text-slate-950 tracking-wide block font-display">
+                HỘI ĐỒNG PHẢN ỨNG
+              </span>
+              <span className="text-[9px] font-bold text-slate-500 block">
+                Biểu cảm &amp; Tiếng lòng tức thì
+              </span>
+            </div>
           </div>
-          <div className="text-left leading-tight">
-            <span className="text-[11px] font-black uppercase text-slate-950 tracking-wide block font-display">
-              HỘI ĐỒNG PHẢN ỨNG
-            </span>
-            <span className="text-[9px] font-bold text-slate-500 block">
-              Biểu cảm &amp; Tiếng lòng tức thì
-            </span>
+
+          {/* Left Scroll Button */}
+          <button
+            type="button"
+            onClick={() => handleScroll('left')}
+            className="hidden sm:flex w-7 h-7 bg-slate-100 hover:bg-slate-200 border-2 border-slate-900 rounded-xl items-center justify-center font-black text-xs shrink-0 cursor-pointer shadow-pop-sm active:translate-y-0.5"
+            title="Cuộn sang trái"
+          >
+            &larr;
+          </button>
+
+          {/* Scrollable Reaction Buttons Rail (Lengthened to 16 Stickers) */}
+          <div
+            ref={scrollRef}
+            className="flex-1 flex items-center gap-2 overflow-x-auto scroll-smooth py-1 px-0.5 no-scrollbar"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {COMIC_STICKERS.map((sticker) => (
+              <button
+                key={sticker.id}
+                type="button"
+                onClick={() => handleStickerClick(sticker)}
+                className={`px-3 py-1.5 rounded-xl border-[2px] border-slate-900 ${sticker.bg} ${sticker.textColor} ${sticker.shadow} hover:-translate-y-1 active:translate-y-0.5 transition-all flex items-center gap-1.5 shrink-0 select-none cursor-pointer`}
+                title={sticker.subtext}
+              >
+                {sticker.renderDoodle()}
+                <div className="text-left leading-tight">
+                  <span className="font-display font-black text-[11px] uppercase tracking-wide whitespace-nowrap block">
+                    {sticker.text}
+                  </span>
+                </div>
+              </button>
+            ))}
           </div>
+
+          {/* Right Scroll Button */}
+          <button
+            type="button"
+            onClick={() => handleScroll('right')}
+            className="hidden sm:flex w-7 h-7 bg-slate-100 hover:bg-slate-200 border-2 border-slate-900 rounded-xl items-center justify-center font-black text-xs shrink-0 cursor-pointer shadow-pop-sm active:translate-y-0.5"
+            title="Cuộn sang phải"
+          >
+            &rarr;
+          </button>
         </div>
 
-        {/* Left Scroll Button */}
-        <button
-          type="button"
-          onClick={() => handleScroll('left')}
-          className="hidden sm:flex w-7 h-7 bg-slate-100 hover:bg-slate-200 border-2 border-slate-900 rounded-xl items-center justify-center font-black text-xs shrink-0 cursor-pointer shadow-pop-sm active:translate-y-0.5"
-          title="Cuộn sang trái"
-        >
-          &larr;
-        </button>
-
-        {/* Scrollable Reaction Buttons Rail (Lengthened to 16 Stickers) */}
-        <div
-          ref={scrollRef}
-          className="flex-1 flex items-center gap-2 overflow-x-auto scroll-smooth py-1 px-0.5 no-scrollbar"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {COMIC_STICKERS.map((sticker) => (
-            <button
-              key={sticker.id}
-              type="button"
-              onClick={() => handleStickerClick(sticker)}
-              className={`px-3 py-1.5 rounded-xl border-[2px] border-slate-900 ${sticker.bg} ${sticker.textColor} ${sticker.shadow} hover:-translate-y-1 active:translate-y-0.5 transition-all flex items-center gap-1.5 shrink-0 select-none cursor-pointer`}
-              title={sticker.subtext}
-            >
-              {sticker.renderDoodle()}
-              <div className="text-left leading-tight">
-                <span className="font-display font-black text-[11px] uppercase tracking-wide whitespace-nowrap block">
-                  {sticker.text}
-                </span>
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* Right Scroll Button */}
-        <button
-          type="button"
-          onClick={() => handleScroll('right')}
-          className="hidden sm:flex w-7 h-7 bg-slate-100 hover:bg-slate-200 border-2 border-slate-900 rounded-xl items-center justify-center font-black text-xs shrink-0 cursor-pointer shadow-pop-sm active:translate-y-0.5"
-          title="Cuộn sang phải"
-        >
-          &rarr;
-        </button>
+        {/* Right Beside the Emote Bar: Floating Chat Bubble Slot */}
+        {rightSlot && (
+          <div className="shrink-0 pointer-events-auto">
+            {rightSlot}
+          </div>
+        )}
       </div>
     </>
   );

@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { Player, GameState, GameMode } from '@/types/party';
 import { AVATAR_PRESETS } from '@/data/avatars';
 import { DoodleAvatar } from '@/components/common/DoodleAvatar';
-import { LobbyChat } from '@/components/game/LobbyChat';
 import { partyAudio } from '@/lib/partyAudio';
 import { IconCrown } from '@/components/common/FlatIcons';
 import {
@@ -698,14 +697,6 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Live Direct Waiting Room Chat */}
-      <LobbyChat
-        localPlayer={localPlayer}
-        players={gameState.players}
-        messages={gameState.chatMessages || []}
-        onSendMessage={onSendMessage}
-      />
 
       {/* Rules Modal */}
       {showRulesModal && (
