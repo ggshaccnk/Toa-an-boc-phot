@@ -185,3 +185,25 @@ export const IconBot: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
     <path d="M9 13v2" />
   </svg>
 );
+
+export const IconCrown: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className}>
+    <path
+      d="M3 17L4.5 7L9 11.5L12 5L15 11.5L19.5 7L21 17H3Z"
+      fill="#FBBF24"
+      stroke="#18181B"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M3 17H21V20H3V17Z"
+      fill="#F59E0B"
+      stroke="#18181B"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <circle cx="12" cy="5" r="1.3" fill="#FEF08A" stroke="#18181B" strokeWidth="1" />
+    <circle cx="4.5" cy="7" r="1.3" fill="#FEF08A" stroke="#18181B" strokeWidth="1" />
+    <circle cx="19.5" cy="7" r="1.3" fill="#FEF08A" stroke="#18181B" strokeWidth="1" />
+  </svg>
+);

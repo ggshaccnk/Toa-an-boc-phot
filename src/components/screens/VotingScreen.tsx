@@ -12,6 +12,7 @@ import {
   WashiTape,
 } from '@/components/common/HandDoodles';
 import { motion } from 'framer-motion';
+import { IconCrown } from '@/components/common/FlatIcons';
 
 interface VotingScreenProps {
   localPlayer: Player;
@@ -140,8 +141,9 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
                     isGuiltyLook={!isShadowMode && votesReceived >= 2}
                   />
                   <div className="overflow-hidden">
-                    <p className="text-sm font-black text-slate-900 truncate">
-                      {suspect.name}
+                    <p className="text-sm font-black text-slate-900 truncate flex items-center gap-1">
+                      <span className="truncate">{suspect.name}</span>
+                      {suspect.isHost && <IconCrown className="w-4 h-4 shrink-0" />}
                     </p>
                     <span className="text-[11px] font-bold text-slate-500 block">
                       {isMe ? '[Bạn]' : 'Bị cáo dự khuyết'}

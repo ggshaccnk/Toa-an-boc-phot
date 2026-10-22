@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Player, ChatMessage } from '@/types/party';
 import { DoodleAvatar } from '@/components/common/DoodleAvatar';
 import { RubberStamp } from '@/components/common/HandDoodles';
-import { IconMail } from '@/components/common/FlatIcons';
+import { IconMail, IconCrown } from '@/components/common/FlatIcons';
 
 interface LobbyChatProps {
   localPlayer: Player;
@@ -129,14 +129,14 @@ export const LobbyChat: React.FC<LobbyChatProps> = ({
                       <span className="font-black text-[11px] truncate">
                         {msg.senderName}
                       </span>
+                      {players.find((p) => p.id === msg.senderId)?.isHost && (
+                        <span title="Chủ phòng" className="inline-flex items-center">
+                          <IconCrown className="w-3.5 h-3.5 shrink-0" />
+                        </span>
+                      )}
                       {isMe && (
                         <span className="text-[9px] font-bold text-amber-800">
                           (Bạn)
-                        </span>
-                      )}
-                      {msg.isBot && (
-                        <span className="px-1 py-0.2 bg-purple-300 text-purple-950 text-[8px] font-black rounded border border-purple-800">
-                          BOT AI
                         </span>
                       )}
                     </div>

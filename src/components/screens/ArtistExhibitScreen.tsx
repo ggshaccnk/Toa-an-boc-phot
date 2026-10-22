@@ -10,6 +10,7 @@ import {
   IconVolume,
   IconVolumeMute,
   IconCheck,
+  IconCrown,
 } from '@/components/common/FlatIcons';
 import { partyAudio } from '@/lib/partyAudio';
 import { courtroomSpeech } from '@/lib/speechVoice';
@@ -257,8 +258,9 @@ export const ArtistExhibitScreen: React.FC<ArtistExhibitScreenProps> = ({
             {/* Author Status Card */}
             <div className="mt-3 flex items-center gap-2 px-3.5 py-2 bg-amber-100 border-2 border-slate-900 rounded-2xl shadow-pop-sm">
               <DoodleAvatar avatarId={authorPlayer?.avatarId || 'cat'} size="sm" />
-              <span className="text-xs md:text-sm font-black text-slate-900">
-                Bị cáo: {authorPlayer?.name} {isMeAuthor && '(Bạn)'}
+              <span className="text-xs md:text-sm font-black text-slate-900 flex items-center gap-1">
+                <span>Bị cáo: {authorPlayer?.name} {isMeAuthor && '(Bạn)'}</span>
+                {authorPlayer?.isHost && <IconCrown className="w-4 h-4 shrink-0" />}
               </span>
               {authorPlayer?.isBot && (
                 <span className="px-2 py-0.5 bg-yellow-300 text-[10px] font-black text-slate-950 rounded-lg border border-slate-900 shadow-xs">

@@ -12,7 +12,7 @@ import {
   WashiTape,
   RubberStamp,
 } from '@/components/common/HandDoodles';
-import { IconSparkles, IconMail, IconDice, IconScroll } from '@/components/common/FlatIcons';
+import { IconSparkles, IconMail, IconDice, IconScroll, IconCrown } from '@/components/common/FlatIcons';
 import { motion } from 'framer-motion';
 
 interface GameScreenProps {
@@ -164,8 +164,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 <div className="flex items-center gap-2 mb-2">
                   <DoodleAvatar avatarId={p.avatarId} size="sm" isSpeaking={hasPlayed} />
                   <div className="overflow-hidden">
-                    <p className="text-xs font-black text-slate-900 truncate">
-                      {p.name} {isMe && '(Bạn)'}
+                    <p className="text-xs font-black text-slate-900 truncate flex items-center gap-1">
+                      <span className="truncate">{p.name} {isMe && '(Bạn)'}</span>
+                      {p.isHost && <IconCrown className="w-3.5 h-3.5 shrink-0" />}
                     </p>
                     <span
                       className={`inline-block px-1.5 py-0.2 text-[9px] font-black rounded border ${

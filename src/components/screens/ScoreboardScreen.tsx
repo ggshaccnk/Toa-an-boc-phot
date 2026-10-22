@@ -8,6 +8,7 @@ import {
   RubberStamp,
   WashiTape,
 } from '@/components/common/HandDoodles';
+import { IconCrown } from '@/components/common/FlatIcons';
 
 interface ScoreboardScreenProps {
   localPlayer: Player;
@@ -111,9 +112,12 @@ export const ScoreboardScreen: React.FC<ScoreboardScreenProps> = ({
                 </span>
                 <DoodleAvatar avatarId={player.avatarId} size="sm" />
                 <div>
-                  <span className="text-xs md:text-sm font-black text-slate-900">
-                    {player.name} {player.id === localPlayer.id && '(Bạn)'}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs md:text-sm font-black text-slate-900">
+                      {player.name} {player.id === localPlayer.id && '(Bạn)'}
+                    </span>
+                    {player.isHost && <IconCrown className="w-3.5 h-3.5 shrink-0" />}
+                  </div>
                   <span className="text-[10px] font-semibold text-slate-500 block">
                     {player.isBot ? 'Người chơi máy (Bot)' : 'Người chơi thật'}
                   </span>

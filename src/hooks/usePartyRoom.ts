@@ -26,7 +26,7 @@ const VOTING_DURATION = 20; // seconds
 export function usePartyRoom() {
   const [localPlayer, setLocalPlayer] = useState<Player>({
     id: `p-${Math.random().toString(36).substring(2, 8)}`,
-    name: 'Bạn (Luật Sư)',
+    name: 'Người chơi 1',
     avatarId: 'cat_lawyer',
     isHost: true,
     isBot: false,
@@ -263,6 +263,19 @@ export function usePartyRoom() {
       switch (data.type) {
         case 'STATE_SYNC':
           setGameState(data.payload);
+          if (data.payload?.players && Array.isArray(data.payload.players)) {
+            const mySyncedProfile = data.payload.players.find(
+              (p: Player) => p.id === localPlayer.id
+            );
+            if (mySyncedProfile) {
+              setLocalPlayer((prev) => {
+                if (prev.name !== mySyncedProfile.name || prev.isHost !== mySyncedProfile.isHost) {
+                  return { ...prev, name: mySyncedProfile.name, isHost: mySyncedProfile.isHost };
+                }
+                return prev;
+              });
+            }
+          }
           break;
 
         case 'UPDATE_PROFILE':
@@ -304,8 +317,21 @@ export function usePartyRoom() {
           if (localPlayer.isHost) {
             syncStateAndBroadcast((prev) => {
               if (prev.players.some((p) => p.id === data.payload.id)) return prev;
+              const nextIndex = prev.players.length + 1;
+              const isDefaultName =
+                !data.payload.name ||
+                data.payload.name === 'Bạn (Luật Sư)' ||
+                data.payload.name === 'Người chơi 1' ||
+                /^Người chơi \d+$/.test(data.payload.name);
+
+              const assignedName = isDefaultName
+                ? `Người chơi ${nextIndex}`
+                : data.payload.name;
+
               const newGuestPlayer: Player = {
                 ...data.payload,
+                name: assignedName,
+                isHost: false,
                 hand: dealCards(prev.gameMode),
                 playedCard: null,
                 voteTargetId: null,
@@ -587,7 +613,7 @@ export function usePartyRoom() {
   // Update local player profile with reliable real-time sync
   const updateProfile = useCallback(
     (name: string, avatarId: string) => {
-      const cleanName = name.trim() || 'Vô Danh Luật Sư';
+      const cleanName = name.trim() || 'Người chơi';
 
       setLocalPlayer((prev) => {
         const updated = { ...prev, name: cleanName, avatarId };
@@ -672,13 +698,13 @@ export function usePartyRoom() {
 
     syncStateAndBroadcast((prev) => {
       if (prev.players.length >= 8) return prev;
-      const botIndex = prev.players.filter((p) => p.isBot).length;
-      const botPreset = BOT_NAMES[botIndex % BOT_NAMES.length];
+      const nextIndex = prev.players.length + 1;
+      const botPreset = BOT_NAMES[(nextIndex - 2) % BOT_NAMES.length];
 
       const newBot: Player = {
         id: `bot-${Math.random().toString(36).substring(2, 7)}`,
-        name: `${botPreset.name}`,
-        avatarId: botPreset.avatar,
+        name: `Người chơi ${nextIndex}`,
+        avatarId: botPreset ? botPreset.avatar : 'sloth_pillow',
         isHost: false,
         isBot: true,
         isReady: true,

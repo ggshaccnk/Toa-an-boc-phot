@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Player, GameState, GameMode } from '@/types/party';
 import { AVATAR_PRESETS } from '@/data/avatars';
 import { DoodleAvatar } from '@/components/common/DoodleAvatar';
 import { LobbyChat } from '@/components/game/LobbyChat';
 import { partyAudio } from '@/lib/partyAudio';
+import { IconCrown } from '@/components/common/FlatIcons';
 import {
   DoodleGavel,
   DoodleScale,
@@ -58,6 +59,10 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
 }) => {
   const [nameInput, setNameInput] = useState(localPlayer.name);
   const [selectedAvatar, setSelectedAvatar] = useState(localPlayer.avatarId);
+
+  useEffect(() => {
+    setNameInput(localPlayer.name);
+  }, [localPlayer.name]);
   const [profileSavedBadge, setProfileSavedBadge] = useState(false);
   const [customPromptInput, setCustomPromptInput] = useState('');
   const [isGeneratingAiPrompt, setIsGeneratingAiPrompt] = useState(false);
@@ -609,13 +614,8 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
                           {p.name}
                         </span>
                         {p.isHost && (
-                          <span className="px-1.5 py-0.2 bg-amber-400 text-[9px] font-black rounded border border-slate-900">
-                            CHỦ TỌA
-                          </span>
-                        )}
-                        {p.isBot && (
-                          <span className="px-1.5 py-0.2 bg-purple-200 text-[9px] font-bold rounded border border-purple-800">
-                            BOT AI
+                          <span title="Chủ phòng" className="inline-flex items-center" aria-label="Chủ phòng">
+                            <IconCrown className="w-4 h-4 shrink-0 drop-shadow-sm" />
                           </span>
                         )}
                       </div>
