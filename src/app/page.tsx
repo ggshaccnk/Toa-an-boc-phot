@@ -227,6 +227,15 @@ export default function Home() {
         }
       />
 
+      {/* Game Watermark: made by Nghia */}
+      <div className="fixed bottom-20 right-3 sm:bottom-3 sm:right-4 z-40 select-none pointer-events-none">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/90 backdrop-blur-sm border-2 border-slate-900 rounded-xl shadow-pop-xs text-[10px] sm:text-xs font-black text-slate-900 font-display tracking-tight">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-slate-500 font-medium lowercase">made by</span>
+          <span className="text-amber-500 font-black uppercase tracking-wider">Nghia</span>
+        </div>
+      </div>
+
       {/* Universal Exit Confirmation Modal */}
       {showExitModal && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in select-none">
@@ -357,7 +366,7 @@ export default function Home() {
           <span className="font-black text-slate-800">TÒA ÁN BÓC PHỐT</span> &bull; Web Party Game thuần Việt &bull; P2P WebRTC Multiplayer Serverless
         </p>
         <p className="text-[11px] text-slate-400">
-          Chế độ: <span className="font-black text-slate-700">{gameState.gameMode}</span> &bull; Kết nối bạn bè từ xa qua link mời Zalo / Messenger!
+          Chế độ: <span className="font-black text-slate-700">{gameState.gameMode}</span> &bull; Kết nối bạn bè từ xa qua link mời Zalo / Messenger! &bull; <span className="font-black text-slate-700">made by Nghia</span>
         </p>
       </footer>
     </main>
