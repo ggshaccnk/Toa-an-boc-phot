@@ -111,6 +111,7 @@ export const ArtistDrawScreen: React.FC<ArtistDrawScreenProps> = ({
       ) : (
         <DoodleCanvas
           promptScenario={gameState.currentPrompt?.scenario || 'Đang bận làm việc mờ ám'}
+          timeRemaining={gameState.phaseTimer}
           onSaveSketch={(dataUrl) => {
             setIsRedrawing(false);
             onSaveSketch(dataUrl);

@@ -65,6 +65,8 @@ export function usePartyRoom() {
     usedPromptIds: [],
     geminiApiKey: '',
     chatMessages: [],
+    countdown: null,
+    roomPenalty: 'Bao cả phòng 1 ly trà sữa / nước ngọt lần gặp tới',
     history: [],
   });
 
@@ -315,6 +317,13 @@ export function usePartyRoom() {
 
         case 'PLAYER_JOIN':
           if (localPlayer.isHost) {
+            const matchingConn = guestConnsRef.current.find(
+              (c) => c.peer === `khach-${data.senderId}` || c.peer.includes(data.senderId)
+            ) || guestConnsRef.current[guestConnsRef.current.length - 1];
+            if (matchingConn) {
+              (matchingConn as any).playerId = data.payload.id || data.senderId;
+            }
+
             syncStateAndBroadcast((prev) => {
               if (prev.players.some((p) => p.id === data.payload.id)) return prev;
               const nextIndex = prev.players.length + 1;
@@ -345,6 +354,29 @@ export function usePartyRoom() {
             setTimeout(() => {
               sendReaction('HÓNG BIẾN!', 'Hội Đồng Tòa Án');
             }, 600);
+          }
+          break;
+
+        case 'PLAYER_LEAVE':
+          if (localPlayer.isHost) {
+            syncStateAndBroadcast((prev) => {
+              const leavingPlayer = prev.players.find((p) => p.id === data.senderId);
+              if (!leavingPlayer) return prev;
+              const remaining = prev.players.filter((p) => p.id !== data.senderId);
+              setTimeout(() => {
+                sendReaction('CHỐI ĐI!', `${leavingPlayer.name} đã rời phòng`);
+              }, 100);
+              return { ...prev, players: remaining };
+            });
+          }
+          break;
+
+        case 'SET_ROOM_PENALTY':
+          if (localPlayer.isHost) {
+            syncStateAndBroadcast((prev) => ({
+              ...prev,
+              roomPenalty: data.payload.penalty,
+            }));
           }
           break;
 
@@ -494,6 +526,18 @@ export function usePartyRoom() {
 
         conn.on('close', () => {
           guestConnsRef.current = guestConnsRef.current.filter((c) => c !== conn);
+          const disconnectedId = (conn as any).playerId;
+          if (disconnectedId) {
+            syncStateAndBroadcast((prev) => {
+              const leavingPlayer = prev.players.find((p) => p.id === disconnectedId);
+              if (!leavingPlayer) return prev;
+              const remaining = prev.players.filter((p) => p.id !== disconnectedId);
+              setTimeout(() => {
+                sendReaction('CHỐI ĐI!', `${leavingPlayer.name} đã ngắt kết nối`);
+              }, 100);
+              return { ...prev, players: remaining };
+            });
+          }
         });
       });
 
@@ -617,6 +661,29 @@ export function usePartyRoom() {
     return () => clearInterval(cleanupInterval);
   }, []);
 
+  // Auto notify Host when closing tab or reloading
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (!localPlayer.isHost && hostConnRef.current && hostConnRef.current.open) {
+        try {
+          hostConnRef.current.send({
+            type: 'PLAYER_LEAVE',
+            payload: { id: localPlayer.id },
+            senderId: localPlayer.id,
+          });
+          hostConnRef.current.close();
+        } catch (e) {
+          console.warn('Error sending leave on unload:', e);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [localPlayer.isHost, localPlayer.id]);
+
   // Update local player profile with reliable real-time sync
   const updateProfile = useCallback(
     (name: string, avatarId: string) => {
@@ -710,7 +777,7 @@ export function usePartyRoom() {
 
       const newBot: Player = {
         id: `bot-${Math.random().toString(36).substring(2, 7)}`,
-        name: `Người chơi ${nextIndex}`,
+        name: `Người chơi ${nextIndex} (bot)`,
         avatarId: botPreset ? botPreset.avatar : 'sloth_pillow',
         isHost: false,
         isBot: true,
@@ -768,6 +835,28 @@ export function usePartyRoom() {
       }
     };
   }, [gameState.timerActive, gameState.phaseTimer]);
+
+  // Set host-customized room penalty rule
+  const setRoomPenalty = useCallback(
+    (penalty: string) => {
+      const clean = penalty.trim();
+      if (!clean) return;
+      partyAudio.playCardHover();
+      if (localPlayer.isHost) {
+        syncStateAndBroadcast((prev) => ({
+          ...prev,
+          roomPenalty: clean,
+        }));
+      } else if (hostConnRef.current && hostConnRef.current.open) {
+        hostConnRef.current.send({
+          type: 'SET_ROOM_PENALTY',
+          payload: { penalty: clean },
+          senderId: localPlayer.id,
+        });
+      }
+    },
+    [localPlayer.isHost, localPlayer.id, syncStateAndBroadcast]
+  );
 
   // Phase transition logic: Khởi tố (Supports Custom Prompts + AI + Anti-Repeat)
   const startAccusationPhase = useCallback(
@@ -928,6 +1017,36 @@ export function usePartyRoom() {
       syncStateAndBroadcast,
     ]
   );
+
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Start game with dramatic 3-2-1 countdown synced across all players
+  const startGameWithCountdown = useCallback(() => {
+    if (!localPlayer.isHost) return;
+    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+
+    partyAudio.stopBGM();
+    partyAudio.playCountdownTick(false);
+    syncStateAndBroadcast((prev) => ({ ...prev, countdown: 3 }));
+
+    let count = 3;
+    countdownIntervalRef.current = setInterval(() => {
+      count -= 1;
+      if (count > 0) {
+        partyAudio.playCountdownTick(false);
+        syncStateAndBroadcast((prev) => ({ ...prev, countdown: count }));
+      } else if (count === 0) {
+        partyAudio.playCountdownTick(true);
+        partyAudio.playGavelStrike();
+        syncStateAndBroadcast((prev) => ({ ...prev, countdown: 0 }));
+      } else {
+        clearInterval(countdownIntervalRef.current!);
+        countdownIntervalRef.current = null;
+        syncStateAndBroadcast((prev) => ({ ...prev, countdown: null }));
+        startAccusationPhase(1);
+      }
+    }, 1000);
+  }, [localPlayer.isHost, syncStateAndBroadcast, startAccusationPhase]);
 
   // Play defense card
   const playDefenseCard = useCallback(
@@ -1097,8 +1216,14 @@ export function usePartyRoom() {
           botGuess = randomPreset;
         }
 
+        // Auto-assign fallback sketch if timer expired without drawing
+        const finalSketch =
+          p.sketchData ||
+          generateBotSketch(p.name, prev.round || 1);
+
         return {
           ...p,
+          sketchData: finalSketch,
           targetSketchPlayerId: targetId,
           guessedAction: botGuess,
         };
@@ -1370,6 +1495,7 @@ export function usePartyRoom() {
       const chaosMessages: string[] = [];
       const prompt = prev.currentPrompt;
       const penalty =
+        prev.roomPenalty?.trim() ||
         prompt?.penalties[Math.floor(Math.random() * prompt.penalties.length)] ||
         'Phải thừa nhận mình là kẻ ngốc nhất bàn và tự giác làm trò hề!';
 
@@ -1760,6 +1886,8 @@ export function usePartyRoom() {
     addBotPlayer,
     removePlayer,
     startAccusationPhase,
+    startGameWithCountdown,
+    setRoomPenalty,
     playDefenseCard,
     playCustomCard,
     startVotingPhase,

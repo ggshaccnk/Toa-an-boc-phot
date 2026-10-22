@@ -108,6 +108,8 @@ export interface GameState {
   usedPromptIds: string[];
   geminiApiKey?: string;
   chatMessages?: ChatMessage[];
+  countdown?: number | null;
+  roomPenalty?: string;
   history: {
     round: number;
     promptTitle: string;
@@ -120,9 +122,11 @@ export interface PeerMessage {
   type:
     | 'STATE_SYNC'
     | 'PLAYER_JOIN'
+    | 'PLAYER_LEAVE'
     | 'PLAYER_READY'
     | 'UPDATE_PROFILE'
     | 'SUBMIT_CUSTOM_PROMPT'
+    | 'SET_ROOM_PENALTY'
     | 'START_GAME'
     | 'PLAY_CARD'
     | 'SUBMIT_SKETCH'

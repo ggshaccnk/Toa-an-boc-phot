@@ -40,6 +40,8 @@ export default function Home() {
     addBotPlayer,
     removePlayer,
     startAccusationPhase,
+    startGameWithCountdown,
+    setRoomPenalty,
     playDefenseCard,
     playCustomCard,
     startVotingPhase,
@@ -67,13 +69,14 @@ export default function Home() {
             onSetJoinCodeInput={setJoinCodeInput}
             onJoinRoom={joinRoomAsGuest}
             onSetGameMode={setGameMode}
+            onSetRoomPenalty={setRoomPenalty}
             onSetGeminiApiKey={setGeminiApiKey}
             onUpdateProfile={updateProfile}
             onSubmitCustomPrompt={submitCustomPrompt}
             onAddBot={addBotPlayer}
             onRemovePlayer={removePlayer}
             onSendMessage={sendChatMessage}
-            onStartGame={() => startAccusationPhase(1)}
+            onStartGame={startGameWithCountdown}
             onCopyShareLink={copyShareLink}
           />
         );
@@ -296,6 +299,54 @@ export default function Home() {
                 [ ✕ TIẾP TỤC Ở LẠI ]
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dramatic Synchronized 3-2-1 Countdown Overlay */}
+      {typeof gameState.countdown === 'number' && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-md animate-fade-in select-none">
+          <div className="bg-paper-cream border-[4px] border-slate-900 rounded-3xl max-w-lg w-full p-8 shadow-pop-lg text-center space-y-6 relative overflow-hidden">
+            {/* Stamp / Decorative Header */}
+            <div className="inline-block px-4 py-1.5 bg-yellow-400 border-2 border-slate-900 rounded-xl font-black text-xs uppercase shadow-pop-sm tracking-wider">
+              {gameState.countdown > 0 ? 'CHỦ TỌA ĐANG GÕ BÚA!' : 'PHIÊN TÒA CHÍNH THỨC BẮT ĐẦU!'}
+            </div>
+
+            {/* Countdown Display */}
+            {gameState.countdown > 0 ? (
+              <div className="space-y-3">
+                <div
+                  key={gameState.countdown}
+                  className="font-black text-9xl text-yellow-400 font-display drop-shadow-[0_8px_0_rgba(15,23,42,1)] animate-bounce"
+                >
+                  {gameState.countdown}
+                </div>
+                <p className="text-sm font-black text-slate-700 uppercase tracking-widest">
+                  CHUẨN BỊ MỞ TÒA TRONG GIÂY LÁT...
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 py-4">
+                <div className="font-black text-6xl md:text-7xl text-rose-500 font-display uppercase tracking-widest drop-shadow-[0_8px_0_rgba(15,23,42,1)] animate-pulse">
+                  MỞ TÒA!
+                </div>
+                <p className="text-base font-black text-slate-900 uppercase tracking-wider">
+                  TRẬT TỰ TẠI PHÒNG XỬ!
+                </p>
+              </div>
+            )}
+
+            {/* Room Penalty Reminder */}
+            {gameState.roomPenalty && (
+              <div className="p-3 bg-white border-2 border-slate-900 rounded-2xl text-left">
+                <span className="text-[10px] font-black uppercase text-rose-600 block">
+                  CẢNH BÁO HÌNH PHẠT CHO BỊ CÁO THUA CUỘC:
+                </span>
+                <span className="text-xs font-black text-slate-800">
+                  {gameState.roomPenalty}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       )}

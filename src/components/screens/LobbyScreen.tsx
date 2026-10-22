@@ -17,6 +17,15 @@ import {
   RubberStamp,
 } from '@/components/common/HandDoodles';
 
+const PENALTY_PRESETS = [
+  'Bao cả phòng 1 ly trà sữa / nước ngọt lần tới',
+  'Hát 1 bài hoặc ngâm thơ 4 câu do phòng chỉ định',
+  'Đổi ảnh đại diện mạng xã hội thành hình bựa trong 24h',
+  'Uống cạn 1 cốc nước lọc trong 10 giây',
+  'Kể một bí mật xấu hổ chưa từng tiết lộ cho ai',
+  'Gọi điện cho bạn thân / người yêu cũ nói 1 câu ngớ ngẩn',
+];
+
 interface LobbyScreenProps {
   localPlayer: Player;
   gameState: GameState;
@@ -27,6 +36,7 @@ interface LobbyScreenProps {
   onSetJoinCodeInput: (code: string) => void;
   onJoinRoom: (code: string) => void;
   onSetGameMode: (mode: GameMode) => void;
+  onSetRoomPenalty?: (penalty: string) => void;
   onSetGeminiApiKey: (key: string) => void;
   onUpdateProfile: (name: string, avatarId: string) => void;
   onSubmitCustomPrompt: (text: string) => void;
@@ -47,6 +57,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
   onSetJoinCodeInput,
   onJoinRoom,
   onSetGameMode,
+  onSetRoomPenalty,
   onSetGeminiApiKey,
   onUpdateProfile,
   onSubmitCustomPrompt,
@@ -58,6 +69,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
 }) => {
   const [nameInput, setNameInput] = useState(localPlayer.name);
   const [selectedAvatar, setSelectedAvatar] = useState(localPlayer.avatarId);
+  const [customPenaltyInput, setCustomPenaltyInput] = useState('');
 
   useEffect(() => {
     setNameInput(localPlayer.name);
@@ -414,6 +426,98 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
             );
           })}
         </div>
+      </div>
+
+      {/* Room Penalty Configuration */}
+      <div className="bg-rose-50/80 border-[2.5px] border-slate-900 rounded-3xl p-5 shadow-pop space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-slate-900/10 pb-3">
+          <div className="flex items-center gap-2.5">
+            <span className="p-2 bg-rose-500 text-white rounded-xl border-2 border-slate-900 shadow-pop-xs">
+              <DoodleScale className="w-5 h-5" />
+            </span>
+            <div>
+              <h3 className="text-sm font-black text-slate-900 uppercase font-display tracking-tight flex items-center gap-2">
+                HÌNH PHẠT CHO KẺ THUA CUỘC / BỊ TUYÊN ÁN
+                <RubberStamp text="ÁP ĐẶT" color="red" />
+              </h3>
+              <p className="text-[11px] text-slate-600 font-bold">
+                {localPlayer.isHost 
+                  ? 'Chủ phòng tự do chọn hoặc tự nhập hình phạt áp dụng cho kẻ thua cuộc' 
+                  : 'Hình phạt do Chủ phòng chỉ định cho kẻ bị kết án trong ván này'}
+              </p>
+            </div>
+          </div>
+          <div className="max-w-md text-right">
+            <span className="text-[11px] font-black uppercase px-3 py-1.5 bg-white border-2 border-slate-900 rounded-xl shadow-pop-sm text-rose-600 inline-block line-clamp-1">
+              Hình phạt: {gameState.roomPenalty || 'Bao cả phòng 1 ly trà sữa'}
+            </span>
+          </div>
+        </div>
+
+        {localPlayer.isHost ? (
+          <div className="space-y-2.5 pt-1">
+            <div className="text-[11px] font-black uppercase tracking-wider text-slate-600">
+              Chọn nhanh mẫu hình phạt hài hước:
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {PENALTY_PRESETS.map((preset) => {
+                const isSelected = (gameState.roomPenalty || '') === preset;
+                return (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => {
+                      onSetRoomPenalty?.(preset);
+                      setCustomPenaltyInput('');
+                    }}
+                    className={`px-3 py-1.5 text-xs font-black rounded-xl border-2 border-slate-900 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-rose-500 text-white shadow-pop-sm -translate-y-0.5'
+                        : 'bg-white text-slate-700 hover:bg-rose-100 hover:border-slate-900'
+                    }`}
+                  >
+                    {isSelected ? '✓ ' : ''}{preset}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              <input
+                type="text"
+                value={customPenaltyInput}
+                onChange={(e) => setCustomPenaltyInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && customPenaltyInput.trim()) {
+                    onSetRoomPenalty?.(customPenaltyInput.trim());
+                  }
+                }}
+                maxLength={100}
+                placeholder="Hoặc gõ hình phạt tự chế của bạn rồi bấm Áp dụng..."
+                className="flex-1 px-3 py-2 text-xs font-bold text-slate-900 bg-white border-2 border-slate-900 rounded-xl shadow-pop-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (customPenaltyInput.trim()) {
+                    onSetRoomPenalty?.(customPenaltyInput.trim());
+                  }
+                }}
+                disabled={!customPenaltyInput.trim()}
+                className="px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white border-2 border-slate-900 rounded-xl font-black text-xs uppercase shadow-pop-sm cursor-pointer transition-transform active:translate-y-0.5"
+              >
+                Áp dụng hình phạt
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="p-3 bg-white border-2 border-slate-900 rounded-2xl flex items-center gap-3">
+            <span className="text-xl font-black text-rose-500">⚖️</span>
+            <p className="text-xs font-black text-slate-800">
+              Kẻ bị kết án ván này sẽ phải: <span className="text-rose-600 underline decoration-rose-300 font-black">{gameState.roomPenalty || 'Chấp hành án phạt của chủ phòng'}</span>
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Main Grid: Avatar Customizer & Player Roster */}

@@ -9,6 +9,7 @@ interface DoodleCanvasProps {
   promptScenario: string;
   onSaveSketch: (dataUrl: string) => void;
   disabled?: boolean;
+  timeRemaining?: number;
 }
 
 const INTERNAL_RES = 800; // Fixed high-resolution canvas size (800x800)
@@ -35,6 +36,7 @@ export const DoodleCanvas: React.FC<DoodleCanvasProps> = ({
   promptScenario,
   onSaveSketch,
   disabled = false,
+  timeRemaining,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -45,6 +47,15 @@ export const DoodleCanvas: React.FC<DoodleCanvasProps> = ({
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
   const [hasDrawn, setHasDrawn] = useState<boolean>(false);
   const [showClearConfirm, setShowClearConfirm] = useState<boolean>(false);
+
+  // Auto-submit sketch when countdown timer hits 0
+  const hasAutoSubmittedRef = useRef(false);
+  useEffect(() => {
+    if (timeRemaining !== undefined && timeRemaining <= 0 && !hasAutoSubmittedRef.current) {
+      hasAutoSubmittedRef.current = true;
+      handleConfirmSubmit();
+    }
+  }, [timeRemaining]);
 
   // Undo & Redo stacks
   const [history, setHistory] = useState<ImageData[]>([]);
