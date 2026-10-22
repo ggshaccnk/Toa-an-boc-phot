@@ -10,6 +10,7 @@ import {
   AccusationPrompt,
   PeerMessage,
   FloatingReaction,
+  ChatMessage,
 } from '@/types/party';
 import { ACCUSATION_PROMPTS } from '@/data/prompts';
 import { MEME_CARDS } from '@/data/cards';
@@ -63,6 +64,7 @@ export function usePartyRoom() {
     customPromptsPool: [],
     usedPromptIds: [],
     geminiApiKey: '',
+    chatMessages: [],
     history: [],
   });
 
@@ -181,6 +183,78 @@ export function usePartyRoom() {
       }
     },
     [localPlayer.name, localPlayer.id, localPlayer.isHost, broadcastToGuests]
+  );
+
+  // Send a live chat message in waiting room lobby
+  const sendChatMessage = useCallback(
+    (text: string) => {
+      const clean = text.trim();
+      if (!clean) return;
+
+      partyAudio.playEmotePop();
+
+      const newMsg: ChatMessage = {
+        id: `msg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        senderId: localPlayer.id,
+        senderName: localPlayer.name,
+        avatarId: localPlayer.avatarId,
+        text: clean,
+        createdAt: Date.now(),
+        isBot: false,
+      };
+
+      if (localPlayer.isHost) {
+        syncStateAndBroadcast((prev) => {
+          const existing = prev.chatMessages || [];
+          const updated = [...existing, newMsg];
+          if (updated.length > 60) updated.shift();
+          return { ...prev, chatMessages: updated };
+        });
+
+        // If bots are present, randomly reply with witty courtroom banter
+        const bots = gameState.players.filter((p) => p.isBot);
+        if (bots.length > 0 && Math.random() < 0.5) {
+          const bot = bots[Math.floor(Math.random() * bots.length)];
+          const botReplies = [
+            'Tôi nghe thấy hết đấy nhé!',
+            'Chủ tọa ơi, người này nói chuyện rất đáng nghi!',
+            'Chuẩn bị ra tòa cãi cùn đi là vừa!',
+            'Đừng nhìn tôi, tôi là công dân gương mẫu!',
+            'Ai chối cãi nhiều là người có tật giật mình nha!',
+            'Lời này sẽ được ghi vào cáo trạng trước tòa!',
+            'Hôm nay tôi sẽ làm chứng chống lại bạn!',
+            'Ai có tật giật mình nha cả phòng!',
+          ];
+          const replyText = botReplies[Math.floor(Math.random() * botReplies.length)];
+
+          setTimeout(() => {
+            const botMsg: ChatMessage = {
+              id: `msg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+              senderId: bot.id,
+              senderName: bot.name,
+              avatarId: bot.avatarId,
+              text: replyText,
+              createdAt: Date.now(),
+              isBot: true,
+            };
+            partyAudio.playEmotePop();
+            syncStateAndBroadcast((prev) => {
+              const existing = prev.chatMessages || [];
+              const updated = [...existing, botMsg];
+              if (updated.length > 60) updated.shift();
+              return { ...prev, chatMessages: updated };
+            });
+          }, 1100);
+        }
+      } else if (hostConnRef.current && hostConnRef.current.open) {
+        hostConnRef.current.send({
+          type: 'CHAT_MESSAGE',
+          payload: newMsg,
+          senderId: localPlayer.id,
+        });
+      }
+    },
+    [localPlayer.id, localPlayer.name, localPlayer.avatarId, localPlayer.isHost, gameState.players, syncStateAndBroadcast]
   );
 
   // Handle incoming peer messages
@@ -316,6 +390,19 @@ export function usePartyRoom() {
           ]);
           if (localPlayer.isHost) {
             broadcastToGuests(data);
+          }
+          break;
+
+        case 'CHAT_MESSAGE':
+          partyAudio.playEmotePop();
+          if (localPlayer.isHost) {
+            const incomingMsg = data.payload as ChatMessage;
+            syncStateAndBroadcast((prev) => {
+              const existing = prev.chatMessages || [];
+              const updated = [...existing, incomingMsg];
+              if (updated.length > 60) updated.shift();
+              return { ...prev, chatMessages: updated };
+            });
           }
           break;
 
@@ -1436,6 +1523,7 @@ export function usePartyRoom() {
     setGameMode,
     setGeminiApiKey,
     sendReaction,
+    sendChatMessage,
     updateProfile,
     submitCustomPrompt,
     submitSketch,

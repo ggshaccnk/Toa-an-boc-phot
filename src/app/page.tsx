@@ -25,6 +25,7 @@ export default function Home() {
     setGameMode,
     setGeminiApiKey,
     sendReaction,
+    sendChatMessage,
     updateProfile,
     submitCustomPrompt,
     submitSketch,
@@ -65,6 +66,7 @@ export default function Home() {
             onSubmitCustomPrompt={submitCustomPrompt}
             onAddBot={addBotPlayer}
             onRemovePlayer={removePlayer}
+            onSendMessage={sendChatMessage}
             onStartGame={() => startAccusationPhase(1)}
             onCopyShareLink={copyShareLink}
           />

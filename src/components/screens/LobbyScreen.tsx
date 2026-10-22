@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Player, GameState, GameMode } from '@/types/party';
 import { AVATAR_PRESETS } from '@/data/avatars';
 import { DoodleAvatar } from '@/components/common/DoodleAvatar';
+import { LobbyChat } from '@/components/game/LobbyChat';
 import { partyAudio } from '@/lib/partyAudio';
 import {
   DoodleGavel,
@@ -31,6 +32,7 @@ interface LobbyScreenProps {
   onSubmitCustomPrompt: (text: string) => void;
   onAddBot: () => void;
   onRemovePlayer: (id: string) => void;
+  onSendMessage: (text: string) => void;
   onStartGame: () => void;
   onCopyShareLink: () => void;
 }
@@ -50,6 +52,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
   onSubmitCustomPrompt,
   onAddBot,
   onRemovePlayer,
+  onSendMessage,
   onStartGame,
   onCopyShareLink,
 }) => {
@@ -179,7 +182,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
   ];
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6">
+    <div className="w-full max-w-5xl mx-auto space-y-6 pb-28">
       {/* Top Banner & Header */}
       <div className="relative p-6 bg-white border-[2.5px] border-slate-900 rounded-3xl shadow-pop flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -695,6 +698,14 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Live Direct Waiting Room Chat */}
+      <LobbyChat
+        localPlayer={localPlayer}
+        players={gameState.players}
+        messages={gameState.chatMessages || []}
+        onSendMessage={onSendMessage}
+      />
 
       {/* Rules Modal */}
       {showRulesModal && (

@@ -75,6 +75,17 @@ export interface FloatingReaction {
   createdAt: number;
 }
 
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  avatarId: string;
+  text: string;
+  createdAt: number;
+  isBot?: boolean;
+  isSystem?: boolean;
+}
+
 export interface GameState {
   roomId: string;
   hostId: string;
@@ -96,6 +107,7 @@ export interface GameState {
   customPromptsPool: AccusationPrompt[];
   usedPromptIds: string[];
   geminiApiKey?: string;
+  chatMessages?: ChatMessage[];
   history: {
     round: number;
     promptTitle: string;
@@ -118,7 +130,8 @@ export interface PeerMessage {
     | 'NEXT_EXHIBIT'
     | 'CAST_VOTE'
     | 'NEXT_PHASE'
-    | 'EMOTE_REACTION';
+    | 'EMOTE_REACTION'
+    | 'CHAT_MESSAGE';
   payload: any;
   senderId: string;
 }
