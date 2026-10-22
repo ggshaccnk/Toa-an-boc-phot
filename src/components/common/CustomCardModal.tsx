@@ -3,14 +3,8 @@
 import React, { useState } from 'react';
 import { AlibiCard } from '@/types/party';
 import { PaperCard } from '@/components/common/PaperCard';
-import { ALIBI_RANDOM_INSPIRATIONS } from '@/data/cards';
 import { partyAudio } from '@/lib/partyAudio';
-import {
-  DoodlePen,
-  DoodleDice,
-  WashiTape,
-  RubberStamp,
-} from '@/components/common/HandDoodles';
+import { DoodlePen } from '@/components/common/HandDoodles';
 
 interface CustomCardModalProps {
   playerName: string;
@@ -45,24 +39,15 @@ export const CustomCardModal: React.FC<CustomCardModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleRandomize = () => {
-    partyAudio.playCardHover();
-    const randomItem =
-      ALIBI_RANDOM_INSPIRATIONS[
-        Math.floor(Math.random() * ALIBI_RANDOM_INSPIRATIONS.length)
-      ];
-    setTitle(randomItem.title);
-    setTagline(randomItem.tagline);
-    setDescription(randomItem.description);
-  };
+  const hasContent = title.trim().length > 0 || description.trim().length > 0;
 
   const previewCard: AlibiCard = {
     id: `custom-${Date.now()}`,
-    title: title.trim() || 'TÔI HOÀN TOÀN VÔ TỘI',
-    tagline: tagline.trim() || 'Thề có bóng đèn tôi vô tri!',
+    title: title.trim() || 'LỜI BÀO CHỮA TỰ CHẾ',
+    tagline: tagline.trim() || (title.trim() ? `"${title.trim()}"` : 'Tự biên tự diễn cãi cùn!'),
     description:
       description.trim() ||
-      'Hãy nhìn vào đôi mắt chân thật này, làm sao một người đáng yêu như tôi lại làm chuyện đó được chứ?',
+      'Hãy nhập lý lẽ và chứng cứ tự chế của bạn vào khung bên cạnh để trình bày trước tòa...',
     category: 'custom',
     color: '#FFB800',
     badgeText: 'TỰ CHẾ ĐỘC QUYỀN',
@@ -71,9 +56,7 @@ export const CustomCardModal: React.FC<CustomCardModalProps> = ({
   };
 
   const handleConfirm = () => {
-    if (!title.trim() && !description.trim()) {
-      handleRandomize();
-    }
+    if (!hasContent) return;
     partyAudio.playCardPlay();
     onCreateCard(previewCard);
     onClose();
@@ -93,7 +76,7 @@ export const CustomCardModal: React.FC<CustomCardModalProps> = ({
                 XƯỞNG TỰ CHẾ LỜI BÀO CHỮA BẤT HỦ
               </h3>
               <p className="text-xs font-semibold text-slate-600">
-                Tự tay tạo lá bài Risograph mang chữ ký và lý do cãi cùn của bạn!
+                Tự tay sáng tạo lá bài mang bản sắc cãi cùn của riêng bạn, không gợi ý sao chép!
               </p>
             </div>
           </div>
@@ -110,16 +93,6 @@ export const CustomCardModal: React.FC<CustomCardModalProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
           {/* Inputs (7 cols) */}
           <div className="md:col-span-7 space-y-3.5">
-            {/* Random Inspiration Button */}
-            <button
-              type="button"
-              onClick={handleRandomize}
-              className="w-full py-2 px-3 bg-amber-100 hover:bg-amber-200 border-2 border-slate-900 rounded-xl font-black text-xs uppercase text-amber-950 flex items-center justify-center gap-2 shadow-pop-sm transition-transform active:translate-y-0.5"
-            >
-              <DoodleDice className="w-5 h-5 shrink-0" />
-              <span>BÍ TỪ? BẤM ĐÂY GỢI Ý CÙN NGAY!</span>
-            </button>
-
             {/* Title */}
             <div>
               <label className="block text-xs font-black uppercase text-slate-700 mb-1">
@@ -202,21 +175,40 @@ export const CustomCardModal: React.FC<CustomCardModalProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t-2 border-slate-900">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border-2 border-slate-900 rounded-xl font-black text-xs uppercase"
-          >
-            HỦY [ ✕ ]
-          </button>
-          <button
-            type="button"
-            onClick={handleConfirm}
-            className="px-6 py-2.5 bg-yellow-400 hover:bg-yellow-500 border-2 border-slate-900 rounded-xl font-black text-xs md:text-sm uppercase shadow-pop flex items-center gap-2 transition-transform active:translate-y-0.5"
-          >
-            <span>[ ĐÓNG DẤU &amp; RA TÒA TRANH TỤNG ]</span>
-          </button>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t-2 border-slate-900">
+          <div>
+            {!hasContent ? (
+              <span className="text-[11px] font-bold text-amber-700 italic">
+                * Hãy tự nhập tiêu đề hoặc lý lẽ cãi cùn của riêng bạn để xuất xưởng!
+              </span>
+            ) : (
+              <span className="text-[11px] font-bold text-emerald-700">
+                ✓ Lời cãi cùn độc quyền sẵn sàng đóng dấu!
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border-2 border-slate-900 rounded-xl font-black text-xs uppercase"
+            >
+              HỦY [ ✕ ]
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirm}
+              disabled={!hasContent}
+              className={`px-6 py-2.5 border-2 border-slate-900 rounded-xl font-black text-xs md:text-sm uppercase flex items-center gap-2 transition-all ${
+                hasContent
+                  ? 'bg-yellow-400 hover:bg-yellow-500 shadow-pop cursor-pointer active:translate-y-0.5'
+                  : 'bg-slate-200 text-slate-400 border-slate-300 cursor-not-allowed shadow-none'
+              }`}
+            >
+              <span>[ ĐÓNG DẤU &amp; RA TÒA TRANH TỤNG ]</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
