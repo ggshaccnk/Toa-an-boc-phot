@@ -4,6 +4,9 @@ import React from 'react';
 import { usePartyRoom } from '@/hooks/usePartyRoom';
 import { LobbyScreen } from '@/components/screens/LobbyScreen';
 import { GameScreen } from '@/components/screens/GameScreen';
+import { ArtistDrawScreen } from '@/components/screens/ArtistDrawScreen';
+import { ArtistGuessScreen } from '@/components/screens/ArtistGuessScreen';
+import { ArtistExhibitScreen } from '@/components/screens/ArtistExhibitScreen';
 import { VotingScreen } from '@/components/screens/VotingScreen';
 import { VerdictScreen } from '@/components/screens/VerdictScreen';
 import { ScoreboardScreen } from '@/components/screens/ScoreboardScreen';
@@ -24,6 +27,11 @@ export default function Home() {
     sendReaction,
     updateProfile,
     submitCustomPrompt,
+    submitSketch,
+    submitGuess,
+    startArtistGuessPhase,
+    startArtistExhibitPhase,
+    nextArtistExhibit,
     addBotPlayer,
     removePlayer,
     startAccusationPhase,
@@ -71,6 +79,37 @@ export default function Home() {
             onPlayCard={playDefenseCard}
             onPlayCustomCard={playCustomCard}
             onFastForwardToVoting={startVotingPhase}
+          />
+        );
+
+      case 'ARTIST_DRAW':
+        return (
+          <ArtistDrawScreen
+            localPlayer={localPlayer}
+            gameState={gameState}
+            onSaveSketch={submitSketch}
+            onFastForwardToGuess={startArtistGuessPhase}
+          />
+        );
+
+      case 'ARTIST_GUESS':
+        return (
+          <ArtistGuessScreen
+            localPlayer={localPlayer}
+            gameState={gameState}
+            onSubmitGuess={submitGuess}
+            onFastForwardToExhibit={startArtistExhibitPhase}
+          />
+        );
+
+      case 'ARTIST_EXHIBIT':
+        return (
+          <ArtistExhibitScreen
+            localPlayer={localPlayer}
+            gameState={gameState}
+            onNextExhibit={nextArtistExhibit}
+            onProceedToVoting={startVotingPhase}
+            onSendReaction={sendReaction}
           />
         );
 

@@ -168,6 +168,14 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
       tag: '[ 🕵️ NẶC DANH ]',
       color: 'bg-purple-100 text-purple-900 border-purple-800',
     },
+    {
+      id: 'ARTIST',
+      title: 'Họa Sĩ Biện Hộ',
+      badge: 'VẼ & ĐOÁN MÒ 🎨',
+      description: 'Phác họa lúc đó đang làm gì, tráo tranh cho người khác đoán mò rồi ra tòa đấu tố!',
+      tag: '[ 🎨 HỘI HỌA ]',
+      color: 'bg-amber-100 text-amber-950 border-amber-800',
+    },
   ];
 
   return (
@@ -361,7 +369,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {GAME_MODES.map((mode) => {
             const isSelected = gameState.gameMode === mode.id;
 

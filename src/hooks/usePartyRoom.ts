@@ -15,6 +15,7 @@ import { ACCUSATION_PROMPTS } from '@/data/prompts';
 import { MEME_CARDS } from '@/data/cards';
 import { AVATAR_PRESETS, BOT_NAMES } from '@/data/avatars';
 import { partyAudio } from '@/lib/partyAudio';
+import { generateBotSketch, BOT_GUESS_PRESETS } from '@/lib/botArtist';
 import confetti from 'canvas-confetti';
 
 const ROUNDS_PER_MATCH = 3;
@@ -38,6 +39,9 @@ export function usePartyRoom() {
     lastVerdict: false,
     assignedPenalty: null,
     customPrompt: '',
+    sketchData: null,
+    targetSketchPlayerId: null,
+    guessedAction: null,
   });
 
   const [gameState, setGameState] = useState<GameState>({
@@ -55,6 +59,7 @@ export function usePartyRoom() {
     voteResults: {},
     chaosAnnouncements: [],
     screenShaking: false,
+    artistExhibitIndex: 0,
     customPromptsPool: [],
     usedPromptIds: [],
     geminiApiKey: '',
@@ -265,6 +270,37 @@ export function usePartyRoom() {
             );
             return { ...prev, players: updated };
           });
+          break;
+
+        case 'SUBMIT_SKETCH':
+          if (localPlayer.isHost) {
+            syncStateAndBroadcast((prev) => ({
+              ...prev,
+              players: prev.players.map((p) =>
+                p.id === data.senderId ? { ...p, sketchData: data.payload.sketchData } : p
+              ),
+            }));
+          }
+          break;
+
+        case 'SUBMIT_GUESS':
+          if (localPlayer.isHost) {
+            syncStateAndBroadcast((prev) => ({
+              ...prev,
+              players: prev.players.map((p) =>
+                p.id === data.senderId ? { ...p, guessedAction: data.payload.guess } : p
+              ),
+            }));
+          }
+          break;
+
+        case 'NEXT_EXHIBIT':
+          if (localPlayer.isHost) {
+            syncStateAndBroadcast((prev) => ({
+              ...prev,
+              artistExhibitIndex: data.payload.index,
+            }));
+          }
           break;
 
         case 'EMOTE_REACTION':
@@ -678,6 +714,9 @@ export function usePartyRoom() {
           activeModifier: null,
           lastVerdict: false,
           assignedPenalty: null,
+          sketchData: null,
+          targetSketchPlayerId: null,
+          guessedAction: null,
         }));
 
         const newUsedIds = [...prev.usedPromptIds, finalPrompt.id];
@@ -694,19 +733,41 @@ export function usePartyRoom() {
           voteResults: {},
           chaosAnnouncements: [],
           usedPromptIds: newUsedIds,
+          artistExhibitIndex: 0,
         };
       });
 
-      // Automatically transition to DEFENSE phase after 4s dramatic reveal
+      // Automatically transition to DEFENSE or ARTIST_DRAW phase after 4s dramatic reveal
       setTimeout(() => {
         partyAudio.playObjectionWhoosh();
         partyAudio.startBGM('court_tension');
-        syncStateAndBroadcast((prev) => ({
-          ...prev,
-          phase: 'DEFENSE',
-          phaseTimer: DEFENSE_DURATION,
-          timerActive: true,
-        }));
+        syncStateAndBroadcast((prev) => {
+          if (prev.gameMode === 'ARTIST') {
+            const updatedWithBots = prev.players.map((p) => {
+              if (p.isBot) {
+                return {
+                  ...p,
+                  sketchData: generateBotSketch(p.name, roundNum),
+                };
+              }
+              return p;
+            });
+            return {
+              ...prev,
+              players: updatedWithBots,
+              phase: 'ARTIST_DRAW',
+              phaseTimer: 60,
+              timerActive: true,
+            };
+          }
+
+          return {
+            ...prev,
+            phase: 'DEFENSE',
+            phaseTimer: DEFENSE_DURATION,
+            timerActive: true,
+          };
+        });
       }, 4200);
     },
     [
@@ -817,6 +878,158 @@ export function usePartyRoom() {
       return () => clearTimeout(timer);
     }
   }, [gameState.phase, localPlayer.isHost, syncStateAndBroadcast]);
+
+  // Submit sketch drawing (ARTIST mode)
+  const submitSketch = useCallback(
+    (sketchData: string) => {
+      partyAudio.playGavelStrike();
+      setLocalPlayer((prev) => ({ ...prev, sketchData }));
+
+      if (localPlayer.isHost) {
+        syncStateAndBroadcast((prev) => ({
+          ...prev,
+          players: prev.players.map((p) =>
+            p.id === localPlayer.id ? { ...p, sketchData } : p
+          ),
+        }));
+      } else if (hostConnRef.current && hostConnRef.current.open) {
+        hostConnRef.current.send({
+          type: 'SUBMIT_SKETCH',
+          payload: { sketchData },
+          senderId: localPlayer.id,
+        });
+      }
+    },
+    [localPlayer.id, localPlayer.isHost, syncStateAndBroadcast]
+  );
+
+  // Submit guess for swapped sketch (ARTIST mode)
+  const submitGuess = useCallback(
+    (guessText: string) => {
+      partyAudio.playGavelStrike();
+      const cleanGuess = guessText.trim();
+      setLocalPlayer((prev) => ({ ...prev, guessedAction: cleanGuess }));
+
+      if (localPlayer.isHost) {
+        syncStateAndBroadcast((prev) => ({
+          ...prev,
+          players: prev.players.map((p) =>
+            p.id === localPlayer.id ? { ...p, guessedAction: cleanGuess } : p
+          ),
+        }));
+      } else if (hostConnRef.current && hostConnRef.current.open) {
+        hostConnRef.current.send({
+          type: 'SUBMIT_GUESS',
+          payload: { guess: cleanGuess },
+          senderId: localPlayer.id,
+        });
+      }
+    },
+    [localPlayer.id, localPlayer.isHost, syncStateAndBroadcast]
+  );
+
+  // Transition to ARTIST_GUESS phase (Host only)
+  const startArtistGuessPhase = useCallback(() => {
+    if (!localPlayer.isHost) return;
+    partyAudio.playGavelStrike();
+    partyAudio.playObjectionWhoosh();
+
+    syncStateAndBroadcast((prev) => {
+      const playerIds = prev.players.map((p) => p.id);
+      const count = playerIds.length;
+      const offset = count > 1 ? Math.max(1, Math.floor(Math.random() * (count - 1)) + 1) : 0;
+
+      const updatedPlayers = prev.players.map((p, idx) => {
+        const targetId = count > 1 ? playerIds[(idx + offset) % count] : p.id;
+        let botGuess = p.guessedAction;
+
+        if (p.isBot) {
+          const randomPreset =
+            BOT_GUESS_PRESETS[Math.floor(Math.random() * BOT_GUESS_PRESETS.length)];
+          botGuess = randomPreset;
+        }
+
+        return {
+          ...p,
+          targetSketchPlayerId: targetId,
+          guessedAction: botGuess,
+        };
+      });
+
+      return {
+        ...prev,
+        players: updatedPlayers,
+        phase: 'ARTIST_GUESS',
+        phaseTimer: 35,
+        timerActive: true,
+      };
+    });
+  }, [localPlayer.isHost, syncStateAndBroadcast]);
+
+  // Transition to ARTIST_EXHIBIT phase (Host only)
+  const startArtistExhibitPhase = useCallback(() => {
+    if (!localPlayer.isHost) return;
+    partyAudio.playGavelStrike();
+    partyAudio.startBGM('court_tension');
+
+    syncStateAndBroadcast((prev) => ({
+      ...prev,
+      phase: 'ARTIST_EXHIBIT',
+      artistExhibitIndex: 0,
+      phaseTimer: 0,
+      timerActive: false,
+    }));
+  }, [localPlayer.isHost, syncStateAndBroadcast]);
+
+  // Navigate to next/prev exhibit (Host only)
+  const nextArtistExhibit = useCallback(
+    (index: number) => {
+      if (!localPlayer.isHost) return;
+      partyAudio.playGavelStrike();
+
+      syncStateAndBroadcast((prev) => ({
+        ...prev,
+        artistExhibitIndex: index,
+      }));
+    },
+    [localPlayer.isHost, syncStateAndBroadcast]
+  );
+
+  // Auto transition from ARTIST_DRAW to ARTIST_GUESS on timer expiry (Host only)
+  useEffect(() => {
+    if (
+      gameState.phase === 'ARTIST_DRAW' &&
+      gameState.phaseTimer === 0 &&
+      !gameState.timerActive &&
+      localPlayer.isHost
+    ) {
+      startArtistGuessPhase();
+    }
+  }, [
+    gameState.phase,
+    gameState.phaseTimer,
+    gameState.timerActive,
+    localPlayer.isHost,
+    startArtistGuessPhase,
+  ]);
+
+  // Auto transition from ARTIST_GUESS to ARTIST_EXHIBIT on timer expiry (Host only)
+  useEffect(() => {
+    if (
+      gameState.phase === 'ARTIST_GUESS' &&
+      gameState.phaseTimer === 0 &&
+      !gameState.timerActive &&
+      localPlayer.isHost
+    ) {
+      startArtistExhibitPhase();
+    }
+  }, [
+    gameState.phase,
+    gameState.phaseTimer,
+    gameState.timerActive,
+    localPlayer.isHost,
+    startArtistExhibitPhase,
+  ]);
 
   // Transition to VOTING phase (Host only)
   const startVotingPhase = useCallback(() => {
@@ -1098,6 +1311,11 @@ export function usePartyRoom() {
     sendReaction,
     updateProfile,
     submitCustomPrompt,
+    submitSketch,
+    submitGuess,
+    startArtistGuessPhase,
+    startArtistExhibitPhase,
+    nextArtistExhibit,
     addBotPlayer,
     removePlayer,
     startAccusationPhase,

@@ -1,12 +1,15 @@
 export type GamePhase =
   | 'LOBBY'
   | 'PROMPT_REVEAL'
+  | 'ARTIST_DRAW'
+  | 'ARTIST_GUESS'
+  | 'ARTIST_EXHIBIT'
   | 'DEFENSE'
   | 'VOTING'
   | 'VERDICT'
   | 'SCOREBOARD';
 
-export type GameMode = 'CLASSIC' | 'CHAOS' | 'SHADOW';
+export type GameMode = 'CLASSIC' | 'CHAOS' | 'SHADOW' | 'ARTIST';
 
 export type CardCategory = 'alibi' | 'blame_shift' | 'chaos' | 'absurd' | 'custom';
 
@@ -59,6 +62,9 @@ export interface Player {
   lastVerdict: boolean;
   assignedPenalty: string | null;
   customPrompt?: string; // Secret accusation prompt submitted by this player
+  sketchData?: string | null; // Drawing dataURL for ARTIST mode
+  targetSketchPlayerId?: string | null; // Player ID whose sketch this player must guess
+  guessedAction?: string | null; // Guess written for targetSketchPlayerId
 }
 
 export interface FloatingReaction {
@@ -84,6 +90,7 @@ export interface GameState {
   voteResults: Record<string, number>; // playerId -> vote count
   chaosAnnouncements: string[];
   screenShaking: boolean;
+  artistExhibitIndex: number;
   customPromptsPool: AccusationPrompt[];
   usedPromptIds: string[];
   geminiApiKey?: string;
@@ -104,6 +111,9 @@ export interface PeerMessage {
     | 'SUBMIT_CUSTOM_PROMPT'
     | 'START_GAME'
     | 'PLAY_CARD'
+    | 'SUBMIT_SKETCH'
+    | 'SUBMIT_GUESS'
+    | 'NEXT_EXHIBIT'
     | 'CAST_VOTE'
     | 'NEXT_PHASE'
     | 'EMOTE_REACTION';

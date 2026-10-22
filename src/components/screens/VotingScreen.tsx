@@ -158,34 +158,79 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
                   </div>
                 </div>
 
-                {/* The card they played as defense */}
-                <div className="p-3 bg-paper-cream border-[1.5px] border-slate-900 rounded-2xl mb-3 shadow-pop-sm">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[9px] font-black uppercase text-slate-500">
-                      Lời Bào Chữa Đã Nộp:
-                    </span>
-                    {suspect.playedCard?.authorName && (
-                      <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-yellow-300 text-slate-900 border border-slate-800">
-                        TỰ CHẾ ✍️
+                {/* ARTIST MODE: Sketch Thumbnail & Witness Guess */}
+                {gameState.gameMode === 'ARTIST' ? (
+                  <div className="p-2.5 bg-paper-cream border-[1.5px] border-slate-900 rounded-2xl mb-3 shadow-pop-sm space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] font-black uppercase text-slate-500">
+                        Bản Phác Họa Ngoại Phạm:
                       </span>
+                      <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-300 text-slate-900 border border-slate-800">
+                        VẼ TAY 🎨
+                      </span>
+                    </div>
+
+                    {suspect.sketchData ? (
+                      <div className="w-full aspect-square max-h-32 bg-white rounded-xl border border-slate-800 overflow-hidden flex items-center justify-center p-1">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={suspect.sketchData}
+                          alt={`Tranh của ${suspect.name}`}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-[10px] italic text-slate-400 text-center py-2">
+                        (Không nộp tranh)
+                      </p>
+                    )}
+
+                    {(() => {
+                      const witness = gameState.players.find(
+                        (p) => p.targetSketchPlayerId === suspect.id
+                      );
+                      return witness?.guessedAction ? (
+                        <div className="p-1.5 bg-rose-50 border border-rose-300 rounded-lg">
+                          <span className="text-[9px] font-black text-rose-800 uppercase block">
+                            Nhân chứng {witness.name} tố cáo:
+                          </span>
+                          <p className="text-[10px] font-bold text-slate-900 italic line-clamp-2">
+                            &ldquo;{witness.guessedAction}&rdquo;
+                          </p>
+                        </div>
+                      ) : null;
+                    })()}
+                  </div>
+                ) : (
+                  /* NORMAL MODES: The card they played as defense */
+                  <div className="p-3 bg-paper-cream border-[1.5px] border-slate-900 rounded-2xl mb-3 shadow-pop-sm">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[9px] font-black uppercase text-slate-500">
+                        Lời Bào Chữa Đã Nộp:
+                      </span>
+                      {suspect.playedCard?.authorName && (
+                        <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-yellow-300 text-slate-900 border border-slate-800">
+                          TỰ CHẾ ✍️
+                        </span>
+                      )}
+                    </div>
+
+                    {suspect.playedCard ? (
+                      <div>
+                        <p className="text-xs font-black text-slate-900 leading-snug">
+                          {suspect.playedCard.title}
+                        </p>
+                        <p className="text-[10px] italic text-slate-700 line-clamp-2 mt-1 bg-white/70 p-1.5 rounded-lg border border-slate-300">
+                          &ldquo;{suspect.playedCard.description}&rdquo;
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-xs italic text-slate-500 mt-1">
+                        (Không kịp đưa ra lý do nào - quá khả nghi!)
+                      </p>
                     )}
                   </div>
-
-                  {suspect.playedCard ? (
-                    <div>
-                      <p className="text-xs font-black text-slate-900 leading-snug">
-                        {suspect.playedCard.title}
-                      </p>
-                      <p className="text-[10px] italic text-slate-700 line-clamp-2 mt-1 bg-white/70 p-1.5 rounded-lg border border-slate-300">
-                        &ldquo;{suspect.playedCard.description}&rdquo;
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-xs italic text-slate-500 mt-1">
-                      (Không kịp đưa ra lý do nào - quá khả nghi!)
-                    </p>
-                  )}
-                </div>
+                )}
               </div>
 
               {/* Vote action button */}
