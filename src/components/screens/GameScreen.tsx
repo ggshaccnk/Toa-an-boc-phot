@@ -12,6 +12,7 @@ import {
   WashiTape,
   RubberStamp,
 } from '@/components/common/HandDoodles';
+import { IconSparkles, IconMail, IconDice, IconScroll } from '@/components/common/FlatIcons';
 import { motion } from 'framer-motion';
 
 interface GameScreenProps {
@@ -51,7 +52,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
             <span className="text-[10px] text-slate-800">[{gameState.gameMode}]</span>
           </div>
           <span className="text-xs md:text-sm font-black text-slate-800 uppercase tracking-tight">
-            {isPromptReveal ? '🔔 CÔNG BỐ CÁO TRẠNG MỚI' : '🗣️ GIAI ĐOẠN BIỆN HỘ BẰNG THẺ BÀI'}
+            {isPromptReveal ? '[ CÔNG BỐ CÁO TRẠNG MỚI ]' : '[ GIAI ĐOẠN BIỆN HỘ BẰNG THẺ BÀI ]'}
           </span>
         </div>
 
@@ -101,19 +102,23 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               <WashiTape text={`CHUYÊN MỤC: ${currentPrompt.category}`} color="bg-amber-300 text-slate-950" />
               {currentPrompt.source === 'gemini' || currentPrompt.isAiGenerated ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 text-white text-xs font-black uppercase rounded-xl border-2 border-slate-900 shadow-pop-sm">
-                  <span>✨ GOOGLE GEMINI 1.5 FLASH TỰ SOẠN</span>
+                  <IconSparkles className="w-3.5 h-3.5" />
+                  <span>GOOGLE GEMINI 1.5 FLASH TỰ SOẠN</span>
                 </span>
               ) : currentPrompt.source === 'custom' ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-400 text-slate-950 text-xs font-black uppercase rounded-xl border-2 border-slate-900 shadow-pop-sm">
-                  <span>📬 HÒM THƯ BÍ MẬT CỦA BẠN BÈ</span>
+                  <IconMail className="w-3.5 h-3.5" />
+                  <span>HÒM THƯ BÍ MẬT CỦA BẠN BÈ</span>
                 </span>
               ) : currentPrompt.source === 'fallback' ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-cyan-300 text-slate-950 text-xs font-black uppercase rounded-xl border-2 border-slate-900 shadow-pop-sm">
-                  <span>🎲 TẠO NGẪU NHIÊN TỰ ĐỘNG</span>
+                  <IconDice className="w-3.5 h-3.5" />
+                  <span>TẠO NGẪU NHIÊN TỰ ĐỘNG</span>
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-200 text-slate-800 text-xs font-black uppercase rounded-xl border-2 border-slate-900 shadow-pop-sm">
-                  <span>📜 CÁO TRẠNG KINH ĐIỂN</span>
+                  <IconScroll className="w-3.5 h-3.5" />
+                  <span>CÁO TRẠNG KINH ĐIỂN</span>
                 </span>
               )}
             </div>
@@ -121,7 +126,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
               &ldquo;{currentPrompt.scenario}&rdquo;
             </h2>
             <p className="text-xs md:text-sm font-bold text-slate-600">
-              👉 Hãy chọn một lá bài bên dưới hoặc bấm nút &ldquo;Tự Chế Lời Bào Chữa&rdquo; để cãi cùn!
+              [ HƯỚNG DẪN ] Hãy chọn một lá bài bên dưới hoặc bấm nút &ldquo;Tự Chế Lời Bào Chữa&rdquo; để cãi cùn!
             </p>
           </div>
         </motion.div>
@@ -221,7 +226,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({
                 className="py-2 px-3.5 bg-yellow-300 hover:bg-yellow-400 border-2 border-slate-900 rounded-xl font-black text-xs uppercase shadow-pop-sm flex items-center gap-2 transition-transform active:translate-y-0.5 cursor-pointer"
               >
                 <DoodlePen className="w-4 h-4" />
-                <span>[ ✍️ TỰ CHẾ BÀI BÀO CHỮA ]</span>
+                <span>[ TỰ CHẾ BÀI BÀO CHỮA ]</span>
               </button>
             )}
 

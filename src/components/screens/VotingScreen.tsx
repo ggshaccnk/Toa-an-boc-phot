@@ -52,7 +52,7 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
             {isShadowMode ? '[ BỎ PHIẾU BÍ MẬT NẶC DANH ]' : '[ BỎ PHIẾU CÔNG KHAI ]'}
           </div>
           <span className="text-xs md:text-sm font-black text-slate-800 uppercase tracking-tight">
-            👉 ĐẾM NGƯỢC CHỈ TAY VẠCH MẶT KẺ KHẢ NGHI NHẤT
+            [ĐẾM NGƯỢC] CHỈ TAY VẠCH MẶT KẺ KHẢ NGHI NHẤT
           </span>
         </div>
 
@@ -73,7 +73,7 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
               onClick={onFinalizeVerdict}
               className="px-3.5 py-1.5 bg-rose-500 hover:bg-rose-600 text-white border-2 border-slate-900 rounded-xl text-xs font-black uppercase shadow-pop-sm transition-transform active:translate-y-0.5 flex items-center gap-1"
             >
-              <span>[ TUYÊN ÁN NGAY 🔨 ]</span>
+              <span>[ TUYÊN ÁN NGAY ]</span>
             </button>
           )}
         </div>
@@ -144,7 +144,7 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
                       {suspect.name}
                     </p>
                     <span className="text-[11px] font-bold text-slate-500 block">
-                      {isMe ? '👤 Bạn' : 'Bị cáo dự khuyết'}
+                      {isMe ? '[Bạn]' : 'Bị cáo dự khuyết'}
                     </span>
                     {suspect.voteTargetId ? (
                       <span className="text-[10px] font-black text-emerald-700 block mt-0.5">
@@ -166,7 +166,7 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
                         Bản Phác Họa Ngoại Phạm:
                       </span>
                       <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-300 text-slate-900 border border-slate-800">
-                        VẼ TAY 🎨
+                        [VẼ TAY]
                       </span>
                     </div>
 
@@ -210,7 +210,7 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
                       </span>
                       {suspect.playedCard?.authorName && (
                         <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-yellow-300 text-slate-900 border border-slate-800">
-                          TỰ CHẾ ✍️
+                          [TỰ CHẾ]
                         </span>
                       )}
                     </div>

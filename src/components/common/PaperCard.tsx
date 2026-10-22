@@ -257,7 +257,7 @@ export const PaperCard: React.FC<PaperCardProps> = ({
                 : 'bg-white hover:bg-yellow-300 text-slate-900'
             }`}
           >
-            {isSelected ? '[✓ ĐÃ CHỌN LÁ NÀY]' : '[DÙNG BÀO CHỮA ⚖️]'}
+            {isSelected ? '[✓ ĐÃ CHỌN LÁ NÀY]' : '[DÙNG BÀO CHỮA]'}
           </button>
         )}
       </div>

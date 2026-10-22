@@ -1152,11 +1152,11 @@ export function usePartyRoom() {
 
       if (culprit?.activeModifier === 'REFLECT') {
         chaosMessages.push(
-          `⚡ GƯƠNG PHẢN CHIẾU! ${culprit.name} phản đòn! Kẻ vote ${culprit.name} bị dính phạt!`
+          `[GƯƠNG PHẢN CHIẾU] ${culprit.name} phản đòn! Kẻ vote ${culprit.name} bị dính phạt!`
         );
       } else if (culprit?.activeModifier === 'BOMB_BLAST') {
         chaosMessages.push(
-          `💣 BOM NỔ CHẬM! ${culprit.name} kích hoạt bom khiến các bị cáo lân cận dính miểng phạt!`
+          `[BOM NỔ CHẬM] ${culprit.name} kích hoạt bom khiến các bị cáo lân cận dính miểng phạt!`
         );
       } else if (culprit?.activeModifier === 'SWAP_VOTES') {
         const others = prev.players.filter((p) => p.id !== culprit.id);
@@ -1164,7 +1164,7 @@ export function usePartyRoom() {
         if (scapegoat) {
           finalGuiltyId = scapegoat.id;
           chaosMessages.push(
-            `🔄 TRÁO ĐỔI HỒ SƠ! ${culprit.name} tẩu thoát, chuyển giao ghế bị cáo cho ${scapegoat.name}!`
+            `[TRÁO ĐỔI HỒ SƠ] ${culprit.name} tẩu thoát, chuyển giao ghế bị cáo cho ${scapegoat.name}!`
           );
         }
       } else if (culprit?.activeModifier === 'LINK_PUPPET') {
@@ -1172,7 +1172,7 @@ export function usePartyRoom() {
         const scapegoat = others[Math.floor(Math.random() * others.length)];
         if (scapegoat) {
           chaosMessages.push(
-            `⚡ KÉO ĐỒNG BỌN! ${culprit.name} kéo theo ${scapegoat.name} cùng chịu chung án phạt!`
+            `[KÉO ĐỒNG BỌN] ${culprit.name} kéo theo ${scapegoat.name} cùng chịu chung án phạt!`
           );
         }
       }
@@ -1289,7 +1289,7 @@ export function usePartyRoom() {
   const copyShareLink = useCallback(() => {
     if (typeof window !== 'undefined') {
       const shareUrl = `${window.location.origin}/?room=${gameState.roomId}`;
-      const inviteMsg = `⚖️ Bạn đã bị khởi tố tại TÒA ÁN BÓC PHỐT!\n👉 Vào nhận án và cãi cùn tại: ${shareUrl}\nMã phòng: ${gameState.roomId}`;
+      const inviteMsg = `Bạn đã bị khởi tố tại TÒA ÁN BÓC PHỐT!\nVào nhận án và cãi cùn tại: ${shareUrl}\nMã phòng: ${gameState.roomId}`;
 
       navigator.clipboard.writeText(inviteMsg);
       setCopyNotification('ĐÃ SAO CHÉP LINK MỜI! DÁN VÀO ZALO / MESSENGER GỬI BẠN BÈ NGAY!');

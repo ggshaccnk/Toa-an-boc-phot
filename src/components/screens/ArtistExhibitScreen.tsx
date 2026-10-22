@@ -3,7 +3,8 @@
 import React from 'react';
 import { Player, GameState } from '@/types/party';
 import { DoodleAvatar } from '@/components/common/DoodleAvatar';
-import { DoodleGavel, RubberStamp, WashiTape } from '@/components/common/HandDoodles';
+import { RubberStamp, WashiTape } from '@/components/common/HandDoodles';
+import { IconPalette, IconScale, IconGavel } from '@/components/common/FlatIcons';
 import { partyAudio } from '@/lib/partyAudio';
 
 interface ArtistExhibitScreenProps {
@@ -59,7 +60,7 @@ export const ArtistExhibitScreen: React.FC<ArtistExhibitScreenProps> = ({
         <div className="flex items-center gap-3">
           <div className="px-3 py-1.5 bg-yellow-400 border-2 border-slate-900 rounded-xl shadow-pop-sm flex items-center gap-1.5 font-black text-xs uppercase tracking-wide">
             <span className="font-mono">HIỆP {gameState.round}/{gameState.maxRounds}</span>
-            <span className="text-[10px] text-slate-900">[TRIỂN LÃM ĐỐI CHẤT 🖼️]</span>
+            <span className="text-[10px] text-slate-900">[TRIỂN LÃM ĐỐI CHẤT]</span>
           </div>
           <span className="text-xs md:text-sm font-black text-slate-800 uppercase tracking-tight">
             VỤ ÁN HỘI HỌA #{currentIndex + 1}/{totalPlayers}
@@ -126,7 +127,7 @@ export const ArtistExhibitScreen: React.FC<ArtistExhibitScreenProps> = ({
                 />
               ) : (
                 <div className="text-center p-4">
-                  <span className="text-4xl block mb-2">🎨</span>
+                  <IconPalette className="w-10 h-10 mx-auto mb-2 text-slate-400" />
                   <p className="text-xs font-bold text-slate-400">
                     Bị cáo không nộp tranh kịp giờ!
                   </p>
@@ -136,7 +137,7 @@ export const ArtistExhibitScreen: React.FC<ArtistExhibitScreenProps> = ({
               {/* Author Pin */}
               <div className="absolute top-2 left-2">
                 <span className="text-[10px] font-black uppercase px-2 py-0.5 bg-slate-900 text-white rounded-md shadow-sm">
-                  {isMeAuthor ? '⭐ TRANH CỦA BẠN' : `Tác giả: ${authorPlayer.name}`}
+                  {isMeAuthor ? '[TRANH CỦA BẠN]' : `Tác giả: ${authorPlayer.name}`}
                 </span>
               </div>
             </div>
@@ -177,7 +178,7 @@ export const ArtistExhibitScreen: React.FC<ArtistExhibitScreenProps> = ({
               <div className="text-[11px] font-bold text-slate-600 border-t border-slate-200 pt-2 flex items-center justify-between">
                 <span>Trạng thái bị cáo:</span>
                 <span className="font-black text-slate-900 uppercase">
-                  {isMeAuthor ? '👉 Hãy tìm cách cãi cùn để thanh minh!' : '👀 Cả phòng hãy soi xét!'}
+                  {isMeAuthor ? '[HÃY TÌM CÁCH CÃI CÙN ĐỂ THANH MINH]' : '[CẢ PHÒNG HÃY PHÁN XÉT]'}
                 </span>
               </div>
             </div>
@@ -185,27 +186,27 @@ export const ArtistExhibitScreen: React.FC<ArtistExhibitScreenProps> = ({
             {/* Quick Emote Reactions Bar */}
             <div className="p-3 bg-white border-2 border-slate-900 rounded-2xl shadow-pop-sm flex items-center justify-between gap-2">
               <span className="text-[11px] font-black uppercase text-slate-700 shrink-0">
-                Cảm xúc:
+                Phản ứng:
               </span>
               <div className="flex items-center gap-1.5 overflow-x-auto">
                 {[
-                  { emoji: '🤣', label: 'Cười ngất' },
-                  { emoji: '💩', label: 'Vẽ xấu' },
-                  { emoji: '⚖️', label: 'Có tội' },
-                  { emoji: '🤥', label: 'Lươn lẹo' },
-                  { emoji: '🎨', label: 'Picasso' },
+                  { text: 'HAHA!', label: 'Cười ngất', color: 'bg-yellow-200 hover:bg-yellow-300 text-slate-950' },
+                  { text: 'XẤU QUÁ!', label: 'Vẽ xấu', color: 'bg-rose-100 hover:bg-rose-200 text-rose-950' },
+                  { text: 'CÓ TỘI!', label: 'Có tội', color: 'bg-red-200 hover:bg-red-300 text-red-950 font-black' },
+                  { text: 'LƯƠN LẸO!', label: 'Lươn lẹo', color: 'bg-amber-100 hover:bg-amber-200 text-amber-950' },
+                  { text: 'ĐỈNH!', label: 'Khen đẹp', color: 'bg-purple-100 hover:bg-purple-200 text-purple-950' },
                 ].map((item) => (
                   <button
-                    key={item.emoji}
+                    key={item.text}
                     type="button"
                     onClick={() => {
                       partyAudio.playEmotePop();
-                      onSendReaction(item.emoji);
+                      onSendReaction(item.text);
                     }}
-                    className="p-1.5 text-base hover:scale-125 transition-transform bg-slate-50 hover:bg-yellow-200 rounded-xl border border-slate-800"
+                    className={`px-2.5 py-1 text-xs font-black uppercase hover:scale-105 active:scale-95 transition-transform rounded-xl border-2 border-slate-900 shadow-pop-sm cursor-pointer ${item.color}`}
                     title={item.label}
                   >
-                    {item.emoji}
+                    {item.text}
                   </button>
                 ))}
               </div>

@@ -65,7 +65,7 @@ export const CustomCardModal: React.FC<CustomCardModalProps> = ({
       'Hãy nhìn vào đôi mắt chân thật này, làm sao một người đáng yêu như tôi lại làm chuyện đó được chứ?',
     category: 'custom',
     color: '#FFB800',
-    badgeText: 'TỰ CHẾ ĐỘC QUYỀN ✍️',
+    badgeText: 'TỰ CHẾ ĐỘC QUYỀN',
     illustration: icon,
     authorName: playerName,
   };
@@ -90,7 +90,7 @@ export const CustomCardModal: React.FC<CustomCardModalProps> = ({
             </div>
             <div>
               <h3 className="text-base md:text-lg font-black text-slate-900 uppercase font-display">
-                XƯỞNG TỰ CHẾ LỜI BÀO CHỮA BẤT HỦ ⚖️
+                XƯỞNG TỰ CHẾ LỜI BÀO CHỮA BẤT HỦ
               </h3>
               <p className="text-xs font-semibold text-slate-600">
                 Tự tay tạo lá bài Risograph mang chữ ký và lý do cãi cùn của bạn!
@@ -215,7 +215,7 @@ export const CustomCardModal: React.FC<CustomCardModalProps> = ({
             onClick={handleConfirm}
             className="px-6 py-2.5 bg-yellow-400 hover:bg-yellow-500 border-2 border-slate-900 rounded-xl font-black text-xs md:text-sm uppercase shadow-pop flex items-center gap-2 transition-transform active:translate-y-0.5"
           >
-            <span>[ ĐÓNG DẤU &amp; RA TÒA TRANH TỤNG ⚖️ ]</span>
+            <span>[ ĐÓNG DẤU &amp; RA TÒA TRANH TỤNG ]</span>
           </button>
         </div>
       </div>

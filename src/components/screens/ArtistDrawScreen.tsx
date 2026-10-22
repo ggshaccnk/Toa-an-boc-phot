@@ -35,12 +35,12 @@ export const ArtistDrawScreen: React.FC<ArtistDrawScreenProps> = ({
         <div className="flex items-center gap-3">
           <div className="px-3 py-1.5 bg-amber-400 border-2 border-slate-900 rounded-xl shadow-pop-sm flex items-center gap-1.5 font-black text-xs uppercase tracking-wide">
             <span className="font-mono">HIỆP {gameState.round}/{gameState.maxRounds}</span>
-            <span className="text-[10px] text-slate-800">[HỌA SĨ BIỆN HỘ 🎨]</span>
+            <span className="text-[10px] text-slate-800">[HỌA SĨ BIỆN HỘ]</span>
           </div>
           <span className="text-xs md:text-sm font-black text-slate-800 uppercase tracking-tight">
             {hasSubmitted
               ? '✓ BẠN ĐÃ NỘP XONG &bull; CHỜ CÁC BỊ CÁO KHÁC'
-              : '🎨 VẼ PHÁC HỌA: LÚC ĐÓ BẠN ĐANG LÀM GÌ?'}
+              : 'VẼ PHÁC HỌA: LÚC ĐÓ BẠN ĐANG LÀM GÌ?'}
           </span>
         </div>
 
@@ -104,7 +104,7 @@ export const ArtistDrawScreen: React.FC<ArtistDrawScreenProps> = ({
               }}
               className="px-4 py-2 bg-slate-100 hover:bg-slate-200 border-2 border-slate-900 rounded-xl text-xs font-black uppercase shadow-pop-sm transition-transform active:translate-y-0.5 cursor-pointer"
             >
-              ✏️ VẼ LẠI NẾU CHƯA ƯNG Ý
+              [ VẼ LẠI BẢN KHÁC ]
             </button>
           </div>
         </div>

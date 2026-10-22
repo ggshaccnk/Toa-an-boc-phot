@@ -58,7 +58,7 @@ export const ACCUSATION_PROMPTS: AccusationPrompt[] = [
     penalties: [
       'Bắt chước dáng đi của một con Zombie bị thoát vị đĩa đệm trong 15 giây',
       'Tiết lộ số ngày kỷ lục từng nằm liên tục trên giường không bước chân ra ngoài',
-      'Gửi 1 icon 🧟‍♀️ kèm lời xin lỗi đến người cuối cùng nhắn tin trên Zalo'
+      'Gửi một tin nhắn "Tôi là Zombie xin lỗi bạn" đến người cuối cùng nhắn tin trên Zalo'
     ]
   },
   {

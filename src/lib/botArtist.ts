@@ -189,8 +189,10 @@ export function generateBotSketch(botName: string, promptIndex: number): string 
       ctx.lineTo(200, 180);
       ctx.stroke();
       // Lotus flower
-      ctx.strokeStyle = '#e11d48';
-      ctx.strokeText('🌸', 185, 330);
+      ctx.fillStyle = '#f43f5e';
+      ctx.beginPath();
+      ctx.arc(200, 315, 12, 0, Math.PI * 2);
+      ctx.fill();
     },
   ];
 

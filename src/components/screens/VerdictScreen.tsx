@@ -62,7 +62,7 @@ export const VerdictScreen: React.FC<VerdictScreenProps> = ({
             onClick={onNextRoundOrScoreboard}
             className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 border-2 border-slate-900 rounded-2xl font-black text-xs md:text-sm uppercase shadow-pop-sm flex items-center gap-1.5 transition-transform active:translate-y-0.5"
           >
-            <span>{isFinalRound ? '[ XEM BẢNG PHONG THẦN 🏆 ]' : '[ HIỆP KẾ TIẾP → ]'}</span>
+            <span>{isFinalRound ? '[ XEM BẢNG PHONG THẦN ]' : '[ HIỆP KẾ TIẾP → ]'}</span>
           </button>
         )}
       </div>
@@ -164,7 +164,7 @@ export const VerdictScreen: React.FC<VerdictScreenProps> = ({
                     : 'bg-white hover:bg-yellow-300 text-slate-800'
                 }`}
               >
-                <span>{penaltyDone ? '[ ✓ ĐÃ CHẤP HÀNH XONG! 🎉 ]' : '[ XÁC NHẬN ĐÃ CHỊU PHẠT ]'}</span>
+                <span>{penaltyDone ? '[ ✓ ĐÃ CHẤP HÀNH XONG! ]' : '[ XÁC NHẬN ĐÃ CHỊU PHẠT ]'}</span>
               </button>
             </div>
           </div>
@@ -186,7 +186,7 @@ export const VerdictScreen: React.FC<VerdictScreenProps> = ({
             onClick={onNextRoundOrScoreboard}
             className="w-full sm:w-auto px-6 py-3 bg-yellow-400 hover:bg-yellow-500 border-2 border-slate-900 rounded-2xl font-black text-sm uppercase shadow-pop flex items-center justify-center gap-2 transition-transform active:translate-y-0.5 cursor-pointer"
           >
-            <span>{isFinalRound ? '[ TỔNG KẾT VÀ TRAO GIẢI PHONG THẦN 🏆 ]' : '[ TIẾP TỤC HIỆP SAU → ]'}</span>
+            <span>{isFinalRound ? '[ TỔNG KẾT VÀ TRAO GIẢI PHONG THẦN ]' : '[ TIẾP TỤC HIỆP SAU → ]'}</span>
           </button>
         ) : (
           <span className="text-xs font-bold text-slate-500 animate-pulse">

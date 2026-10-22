@@ -3,6 +3,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { partyAudio } from '@/lib/partyAudio';
 import { WashiTape, RubberStamp } from '@/components/common/HandDoodles';
+import { IconBrush, IconEraser, IconUndo, IconTrash } from '@/components/common/FlatIcons';
 
 interface DoodleCanvasProps {
   promptScenario: string;
@@ -262,7 +263,7 @@ export const DoodleCanvas: React.FC<DoodleCanvasProps> = ({
         {/* Floating indicator when canvas is blank */}
         {!hasDrawn && (
           <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-4 text-center">
-            <span className="text-2xl mb-1 animate-bounce">✏️</span>
+            <IconBrush className="w-8 h-8 mb-1 text-slate-400 animate-bounce" />
             <p className="text-xs md:text-sm font-black text-slate-400 uppercase tracking-wide">
               VẼ BẰNG CHỨNG NGOẠI PHẠM VÀO ĐÂY
             </p>
@@ -305,14 +306,14 @@ export const DoodleCanvas: React.FC<DoodleCanvasProps> = ({
               setIsEraser(!isEraser);
               partyAudio.playCardHover();
             }}
-            className={`px-2.5 py-1 text-xs font-black rounded-xl border-2 border-slate-900 transition-all flex items-center gap-1 shrink-0 ${
+            className={`px-2.5 py-1 text-xs font-black rounded-xl border-2 border-slate-900 transition-all flex items-center gap-1.5 shrink-0 ${
               isEraser
                 ? 'bg-rose-400 text-white shadow-pop-sm scale-105'
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
             }`}
           >
-            <span>🧹</span>
-            <span>TẨY</span>
+            <IconEraser className="w-3.5 h-3.5" />
+            <span>TẨY MỰC</span>
           </button>
         </div>
 
@@ -349,18 +350,20 @@ export const DoodleCanvas: React.FC<DoodleCanvasProps> = ({
               type="button"
               onClick={handleUndo}
               disabled={history.length <= 1}
-              className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-800 border-2 border-slate-900 rounded-xl text-xs font-black shadow-pop-sm"
+              className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-800 border-2 border-slate-900 rounded-xl text-xs font-black shadow-pop-sm flex items-center gap-1"
               title="Hoàn tác nét vẽ"
             >
-              ↩ HOÀN TÁC
+              <IconUndo className="w-3.5 h-3.5" />
+              <span>HOÀN TÁC</span>
             </button>
             <button
               type="button"
               onClick={handleClear}
-              className="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-900 border-2 border-slate-900 rounded-xl text-xs font-black shadow-pop-sm"
+              className="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-900 border-2 border-slate-900 rounded-xl text-xs font-black shadow-pop-sm flex items-center gap-1"
               title="Xóa trắng canvas"
             >
-              🗑️ XÓA HẾT
+              <IconTrash className="w-3.5 h-3.5" />
+              <span>XÓA HẾT</span>
             </button>
           </div>
         </div>
@@ -378,7 +381,7 @@ export const DoodleCanvas: React.FC<DoodleCanvasProps> = ({
               : 'bg-slate-200 text-slate-400 cursor-not-allowed border-slate-400'
           }`}
         >
-          <span>[ 🖼️ NỘP BỨC TRANH BẰNG CHỨNG VÀO TÒA ⚖️ ]</span>
+          <span>[ NỘP BỨC TRANH BẰNG CHỨNG VÀO TÒA ]</span>
         </button>
       </div>
     </div>

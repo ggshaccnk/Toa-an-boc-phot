@@ -218,7 +218,7 @@ export const DoodleAvatar: React.FC<DoodleAvatarProps> = ({
       {/* Speech bubble indicator */}
       {isSpeaking && (
         <div className="absolute -top-7 px-2.5 py-0.5 bg-yellow-300 border-2 border-slate-900 rounded-full text-[11px] font-black tracking-wide shadow-pop-sm animate-bounce z-20 whitespace-nowrap">
-          ĐANG BÀO CHỮA! 📣
+          ĐANG BÀO CHỮA!
         </div>
       )}
 

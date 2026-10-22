@@ -149,7 +149,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
       title: 'Phiên Tòa Dân Sự',
       badge: 'TIÊU CHUẨN',
       description: '3 hiệp xử án hài hước, cãi cùn dí dỏm, gắn kết bạn bè.',
-      tag: '[ ⚖️ DÂN SỰ ]',
+      tag: '[ DÂN SỰ ]',
       color: 'bg-blue-100 text-blue-900 border-blue-800',
     },
     {
@@ -157,7 +157,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
       title: 'Tòa Án Cực Đoan',
       badge: 'SIÊU HỖN LOẠN',
       description: 'Gấp đôi thẻ Hỗn Loạn: Bom nổ chậm lây lan, Tráo hồ sơ, Phản đòn!',
-      tag: '[ 💣 BOM NỔ ]',
+      tag: '[ BOM NỔ ]',
       color: 'bg-rose-100 text-rose-900 border-rose-800',
     },
     {
@@ -165,15 +165,15 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
       title: 'Tòa Án Giấu Mặt',
       badge: 'ẨN DANH 100%',
       description: 'Bỏ phiếu bí mật nặc danh, thủ phạm chỉ lộ diện khi tuyên án!',
-      tag: '[ 🕵️ NẶC DANH ]',
+      tag: '[ NẶC DANH ]',
       color: 'bg-purple-100 text-purple-900 border-purple-800',
     },
     {
       id: 'ARTIST',
       title: 'Họa Sĩ Biện Hộ',
-      badge: 'VẼ & ĐOÁN MÒ 🎨',
+      badge: 'VẼ & ĐOÁN MÒ',
       description: 'Phác họa lúc đó đang làm gì, tráo tranh cho người khác đoán mò rồi ra tòa đấu tố!',
-      tag: '[ 🎨 HỘI HỌA ]',
+      tag: '[ HỘI HỌA ]',
       color: 'bg-amber-100 text-amber-950 border-amber-800',
     },
   ];
@@ -192,7 +192,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
               <RubberStamp text="P2P WEBRTC MESH" color="purple" />
             </div>
             <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight font-display">
-              TÒA ÁN BÓC PHỐT ⚖️
+              TÒA ÁN BÓC PHỐT
             </h1>
             <p className="text-xs md:text-sm font-semibold text-slate-600">
               Chơi cùng bạn bè khắp mọi miền &bull; Mở link trên điện thoại hoặc máy tính!
@@ -250,7 +250,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
               type="button"
               className="flex-1 md:flex-initial px-4 py-2 bg-emerald-400 hover:bg-emerald-500 border-2 border-slate-900 rounded-2xl shadow-pop-sm font-black text-xs uppercase text-slate-950 flex items-center justify-center gap-1.5 transition-transform active:translate-y-0.5 cursor-pointer"
             >
-              <span>[ 🔗 SAO CHÉP LINK MỜI BẠN BÈ ]</span>
+              <span>[ SAO CHÉP LINK MỜI BẠN BÈ ]</span>
             </button>
           )}
         </div>
@@ -324,7 +324,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
               className="px-3 py-2 bg-amber-200 hover:bg-amber-300 border-2 border-slate-900 rounded-xl font-black text-xs uppercase flex items-center justify-center gap-1.5 shadow-pop-sm shrink-0 transition-transform active:translate-y-0.5"
             >
               <DoodleDice className="w-4 h-4 shrink-0" />
-              <span>{isGeneratingAiPrompt ? 'Đang tạo...' : '🎲 GỢI Ý CÂU BẰNG AI'}</span>
+              <span>{isGeneratingAiPrompt ? 'Đang tạo...' : '[ GỢI Ý CÂU ]'}</span>
             </button>
             <button
               type="button"
@@ -332,7 +332,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
               disabled={!customPromptInput.trim()}
               className="px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white border-2 border-slate-900 rounded-xl font-black text-xs uppercase shadow-pop-sm shrink-0 transition-transform active:translate-y-0.5"
             >
-              [ 📬 NỘP CÁO TRẠNG ]
+              [ NỘP CÁO TRẠNG ]
             </button>
           </div>
 
@@ -485,7 +485,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
                 onClick={() => setShowAiSettings(!showAiSettings)}
                 className="text-[11px] font-black uppercase text-purple-700 hover:underline flex items-center gap-1"
               >
-                [ ⚙️ CẤU HÌNH GOOGLE GEMINI API KEY (TÙY CHỌN) ]
+                [ CẤU HÌNH GOOGLE GEMINI AI KEY (TÙY CHỌN) ]
               </button>
               {gameState.geminiApiKey ? (
                 <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-400">
@@ -554,7 +554,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
                     }}
                     className="w-full py-1.5 bg-yellow-300 hover:bg-yellow-400 disabled:opacity-50 text-slate-950 font-black text-[11px] uppercase rounded-lg border border-slate-900 shadow-pop-sm transition-transform active:translate-y-0.5"
                   >
-                    {isTestingAi ? 'ĐANG KẾT NỐI VÀ KIỂM TRA GEMINI...' : '[ 🧪 BẤM ĐỂ THỬ XEM GEMINI ĐÃ CHẠY CHƯA ]'}
+                    {isTestingAi ? 'ĐANG KẾT NỐI VÀ KIỂM TRA GEMINI...' : '[ KIỂM TRA KẾT NỐI GEMINI ]'}
                   </button>
                 </div>
 
@@ -563,7 +563,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
                   <div className="p-2.5 bg-white border-2 border-purple-900 rounded-xl space-y-1 animate-fade-in shadow-pop-sm">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-black uppercase text-purple-800">
-                        {aiTestResult.source === 'gemini' ? '✨ GEMINI ĐÃ SẴN SÀNG!' : '🎲 CHẾ ĐỘ TỰ SINH DỰ PHÒNG'}
+                        {aiTestResult.source === 'gemini' ? '[ GEMINI ĐÃ SẴN SÀNG ]' : '[ CHẾ ĐỘ DỰ PHÒNG ]'}
                       </span>
                       <span className="text-[9px] font-mono text-slate-500">
                         {aiTestResult.authorName}
@@ -637,7 +637,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
               {gameState.players.length < 3 && (
                 <div className="p-3 bg-amber-50 border-2 border-dashed border-amber-500 rounded-2xl col-span-full text-center">
                   <p className="text-xs font-bold text-amber-900">
-                    ⚠️ Cần ít nhất 3 người để bắt đầu. Hãy bấm nút &ldquo;+ Thêm Bot Lập Dị&rdquo; hoặc gửi link mời bạn bè!
+                    [CHÚ Ý] Cần ít nhất 3 người để bắt đầu. Hãy bấm nút &ldquo;+ Thêm Bot Lập Dị&rdquo; hoặc gửi link mời bạn bè!
                   </p>
                 </div>
               )}
@@ -684,7 +684,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
                 }`}
               >
                 {canStart
-                  ? `[ BẮT ĐẦU: ${GAME_MODES.find((m) => m.id === gameState.gameMode)?.title.toUpperCase()} (3 HIỆP) ⚖️ ]`
+                  ? `[ BẮT ĐẦU: ${GAME_MODES.find((m) => m.id === gameState.gameMode)?.title.toUpperCase()} (3 HIỆP) ]`
                   : `[ CẦN THÊM ${3 - gameState.players.length} NGƯỜI ĐỂ MỞ TÒA ]`}
               </button>
             ) : (
@@ -768,7 +768,7 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
                 <p className="font-black text-slate-950 mb-1">
                   Cách 1: Gửi Link Trực Tiếp (Tiện nhất cho Zalo / Messenger)
                 </p>
-                <p>Chủ phòng bấm nút <span className="font-black text-emerald-800">[ 🔗 SAO CHÉP LINK MỜI BẠN BÈ ]</span> rồi gửi link cho bạn bè. Bạn bè bấm vào link trên điện thoại hoặc máy tính sẽ tự động vào phòng ngay lập tức!</p>
+                <p>Chủ phòng bấm nút <span className="font-black text-emerald-800">[ SAO CHÉP LINK MỜI BẠN BÈ ]</span> rồi gửi link cho bạn bè. Bạn bè bấm vào link trên điện thoại hoặc máy tính sẽ tự động vào phòng ngay lập tức!</p>
               </div>
 
               <div className="p-3 bg-yellow-50 border-2 border-slate-900 rounded-xl">

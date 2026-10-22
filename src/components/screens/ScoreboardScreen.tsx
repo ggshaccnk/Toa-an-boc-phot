@@ -36,7 +36,7 @@ export const ScoreboardScreen: React.FC<ScoreboardScreenProps> = ({
           <WashiTape text="KẾT THÚC PHIÊN TÒA CHUNG CUỘC" color="bg-amber-400 text-slate-950" />
         </div>
         <h1 className="text-2xl md:text-4xl font-black text-slate-900 font-display uppercase tracking-tight">
-          BẢNG PHONG THẦN &amp; SỔ TỘI ĐỒ 📜
+          BẢNG PHONG THẦN &amp; SỔ TỘI ĐỒ
         </h1>
         <p className="text-xs md:text-sm font-semibold text-slate-600">
           Ai là kẻ lươn lẹo nhất bàn, và ai giữ được sự trong sạch giả tạo?
@@ -59,7 +59,7 @@ export const ScoreboardScreen: React.FC<ScoreboardScreenProps> = ({
               Tổng cộng bị kết án: <span className="text-base font-black font-mono">{topCulprit.timesConvicted} lần</span>
             </p>
             <div className="mt-3 p-2.5 bg-white border border-slate-900 rounded-xl text-xs font-semibold text-slate-700 italic">
-              Danh hiệu: &ldquo;Chúa Tể Bị Đổ Tội &amp; Trùm Quỵt Nợ&rdquo; 👑
+              Danh hiệu: &ldquo;Chúa Tể Bị Đổ Tội &amp; Trùm Quỵt Nợ&rdquo;
             </div>
           </div>
         )}
@@ -78,7 +78,7 @@ export const ScoreboardScreen: React.FC<ScoreboardScreenProps> = ({
               Chỉ bị kết án: <span className="text-base font-black font-mono">{mostInnocent.timesConvicted} lần</span>
             </p>
             <div className="mt-3 p-2.5 bg-white border border-slate-900 rounded-xl text-xs font-semibold text-slate-700 italic">
-              Danh hiệu: &ldquo;Luật Sư Vàng Trong Làng Lươn Lẹo&rdquo; 🛡️
+              Danh hiệu: &ldquo;Luật Sư Vàng Trong Làng Lươn Lẹo&rdquo;
             </div>
           </div>
         )}
@@ -172,7 +172,7 @@ export const ScoreboardScreen: React.FC<ScoreboardScreenProps> = ({
           onClick={onResetGame}
           className="w-full sm:w-auto px-8 py-3.5 bg-yellow-400 hover:bg-yellow-500 border-[2.5px] border-slate-900 rounded-2xl font-black text-sm uppercase shadow-pop flex items-center justify-center gap-2 transition-transform active:translate-y-0.5 cursor-pointer"
         >
-          <span>[ 🔄 CHƠI LẠI VÁN MỚI (LÀM LẠI CUỘC ĐỜI) ⚖️ ]</span>
+          <span>[ CHƠI LẠI VÁN MỚI (LÀM LẠI CUỘC ĐỜI) ]</span>
         </button>
       </div>
     </div>

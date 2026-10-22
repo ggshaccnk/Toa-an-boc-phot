@@ -162,7 +162,7 @@ export default function Home() {
       {/* Playful Footer */}
       <footer className="mt-12 text-center text-xs font-bold text-slate-500 space-y-1 select-none">
         <p>
-          ⚖️ <span className="font-black text-slate-800">TÒA ÁN BÓC PHỐT</span> &bull; Web Party Game thuần Việt &bull; P2P WebRTC Multiplayer Serverless
+          <span className="font-black text-slate-800">TÒA ÁN BÓC PHỐT</span> &bull; Web Party Game thuần Việt &bull; P2P WebRTC Multiplayer Serverless
         </p>
         <p className="text-[11px] text-slate-400">
           Chế độ: <span className="font-black text-slate-700">{gameState.gameMode}</span> &bull; Kết nối bạn bè từ xa qua link mời Zalo / Messenger!

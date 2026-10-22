@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Player, GameState } from '@/types/party';
 import { DoodleAvatar } from '@/components/common/DoodleAvatar';
 import { DoodleClock, RubberStamp, WashiTape } from '@/components/common/HandDoodles';
+import { IconSearch } from '@/components/common/FlatIcons';
 import { partyAudio } from '@/lib/partyAudio';
 import { FUNNY_GUESS_SUGGESTIONS } from '@/lib/botArtist';
 
@@ -60,12 +61,12 @@ export const ArtistGuessScreen: React.FC<ArtistGuessScreenProps> = ({
         <div className="flex items-center gap-3">
           <div className="px-3 py-1.5 bg-purple-400 border-2 border-slate-900 rounded-xl shadow-pop-sm flex items-center gap-1.5 font-black text-xs uppercase tracking-wide">
             <span className="font-mono">HIỆP {gameState.round}/{gameState.maxRounds}</span>
-            <span className="text-[10px] text-purple-950">[ĐOÁN MÒ LỜI KHAI 🕵️]</span>
+            <span className="text-[10px] text-purple-950">[ĐOÁN MÒ LỜI KHAI]</span>
           </div>
           <span className="text-xs md:text-sm font-black text-slate-800 uppercase tracking-tight">
             {hasGuessed
               ? '✓ BẠN ĐÃ NỘP LỜI KHAI &bull; CHỜ MỞ TÒA'
-              : '🕵️ NHÂN CHỨNG: BẠN ĐOÁN XEM TÊN NÀY ĐANG VẼ GÌ?'}
+              : 'NHÂN CHỨNG: BẠN ĐOÁN XEM TÊN NÀY ĐANG VẼ GÌ?'}
           </span>
         </div>
 
@@ -118,7 +119,7 @@ export const ArtistGuessScreen: React.FC<ArtistGuessScreenProps> = ({
               />
             ) : (
               <div className="text-center p-4">
-                <span className="text-3xl block mb-1">❓</span>
+                <IconSearch className="w-8 h-8 mx-auto mb-1 text-slate-400" />
                 <p className="text-xs font-bold text-slate-500">
                   Đang tải bức tranh bí mật từ bị cáo...
                 </p>
@@ -194,7 +195,7 @@ export const ArtistGuessScreen: React.FC<ArtistGuessScreenProps> = ({
                     onClick={handleRandomSuggestion}
                     className="px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 border-2 border-slate-900 rounded-xl text-xs font-black text-slate-900 shadow-pop-sm transition-transform active:translate-y-0.5 cursor-pointer"
                   >
-                    🎲 GỢI Ý BỰA
+                    [ GỢI Ý BỰA ]
                   </button>
 
                   <button
@@ -206,7 +207,7 @@ export const ArtistGuessScreen: React.FC<ArtistGuessScreenProps> = ({
                         : 'bg-slate-200 text-slate-400 cursor-not-allowed border-slate-400'
                     }`}
                   >
-                    [ 📬 NỘP LỜI KHAI CHO TÒA ]
+                    [ NỘP LỜI KHAI CHO TÒA ]
                   </button>
                 </div>
               </form>
