@@ -205,8 +205,8 @@ export const VerdictScreen: React.FC<VerdictScreenProps> = ({
               <RubberStamp
                 text={
                   isTieVote
-                    ? `CẢ ${convictedPlayers.map((p) => p.name).join(' & ')} CÙNG THỰC HIỆN`
-                    : 'HÌNH PHẠT BẮT BUỘC THỰC HIỆN NGAY'
+                    ? `HIỆP ${gameState.round}: CẢ ${convictedPlayers.map((p) => p.name).join(' & ')} CÙNG THỰC HIỆN`
+                    : `HÌNH PHẠT HIỆP ${gameState.round} (THỰC HIỆN NGAY)`
                 }
                 color="red"
               />

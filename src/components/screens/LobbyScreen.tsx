@@ -23,7 +23,13 @@ const PENALTY_PRESETS = [
   'Đổi ảnh đại diện mạng xã hội thành hình bựa trong 24h',
   'Uống cạn 1 cốc nước lọc trong 10 giây',
   'Kể một bí mật xấu hổ chưa từng tiết lộ cho ai',
-  'Gọi điện cho bạn thân / người yêu cũ nói 1 câu ngớ ngẩn',
+  'Gọi điện cho bạn bè / người yêu cũ nói 1 câu ngớ ngẩn',
+  'Chụp ảnh selfie mặt xấu nhất gửi ngay vào nhóm chat',
+  'Bắt chước tiếng kêu của 3 con vật khác nhau',
+  'Tự nhận mình là kẻ ngốc nhất bàn và cúi đầu xin lỗi 3 lần',
+  'Làm mặt quỷ giữ nguyên trong 30 giây cho cả phòng chụp ảnh',
+  'Bật cam múa phụ họa theo 1 điệu nhảy hot trend TikTok',
+  'Đọc rap 1 đoạn giới thiệu bản thân cực ngáo ngơ',
 ];
 
 interface LobbyScreenProps {
@@ -37,6 +43,10 @@ interface LobbyScreenProps {
   onJoinRoom: (code: string) => void;
   onSetGameMode: (mode: GameMode) => void;
   onSetRoomPenalty?: (penalty: string) => void;
+  onSetRoundPenalty?: (roundIndex: number, penalty: string) => void;
+  onSetAllRoundPenalties?: (penalties: string[]) => void;
+  onSetMaxRounds?: (rounds: number) => void;
+  onRandomizeAllPenalties?: () => void;
   onSetGeminiApiKey: (key: string) => void;
   onUpdateProfile: (name: string, avatarId: string) => void;
   onSubmitCustomPrompt: (text: string) => void;
@@ -58,6 +68,10 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
   onJoinRoom,
   onSetGameMode,
   onSetRoomPenalty,
+  onSetRoundPenalty,
+  onSetAllRoundPenalties,
+  onSetMaxRounds,
+  onRandomizeAllPenalties,
   onSetGeminiApiKey,
   onUpdateProfile,
   onSubmitCustomPrompt,
@@ -70,6 +84,18 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
   const [nameInput, setNameInput] = useState(localPlayer.name);
   const [selectedAvatar, setSelectedAvatar] = useState(localPlayer.avatarId);
   const [customPenaltyInput, setCustomPenaltyInput] = useState('');
+  const [selectedRoundTab, setSelectedRoundTab] = useState(0);
+
+  const roundCount = gameState.maxRounds || 3;
+  const currentPenalties: string[] =
+    gameState.roundPenalties && gameState.roundPenalties.length === roundCount
+      ? gameState.roundPenalties
+      : Array.from({ length: roundCount }).map((_, i) => {
+          if (i === 0 && gameState.roomPenalty) return gameState.roomPenalty;
+          return PENALTY_PRESETS[i % PENALTY_PRESETS.length];
+        });
+
+  const activeRoundIndex = Math.min(selectedRoundTab, Math.max(0, roundCount - 1));
 
   useEffect(() => {
     setNameInput(localPlayer.name);
@@ -428,8 +454,9 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
         </div>
       </div>
 
-      {/* Room Penalty Configuration */}
-      <div className="bg-rose-50/80 border-[2.5px] border-slate-900 rounded-3xl p-5 shadow-pop space-y-3">
+      {/* Multi-Round Penalty Configuration */}
+      <div className="bg-rose-50/80 border-[2.5px] border-slate-900 rounded-3xl p-5 shadow-pop space-y-4">
+        {/* Header Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-slate-900/10 pb-3">
           <div className="flex items-center gap-2.5">
             <span className="p-2 bg-rose-500 text-white rounded-xl border-2 border-slate-900 shadow-pop-xs">
@@ -437,87 +464,209 @@ export const LobbyScreen: React.FC<LobbyScreenProps> = ({
             </span>
             <div>
               <h3 className="text-sm font-black text-slate-900 uppercase font-display tracking-tight flex items-center gap-2">
-                HÌNH PHẠT CHO KẺ THUA CUỘC / BỊ TUYÊN ÁN
-                <RubberStamp text="ÁP ĐẶT" color="red" />
+                HÌNH PHẠT THEO TỪNG HIỆP ĐẤU ({roundCount} HIỆP = {roundCount} HÌNH PHẠT)
+                <RubberStamp text="MỖI HIỆP 1 PHẠT" color="red" />
               </h3>
               <p className="text-[11px] text-slate-600 font-bold">
                 {localPlayer.isHost 
-                  ? 'Chủ phòng tự do chọn hoặc tự nhập hình phạt áp dụng cho kẻ thua cuộc' 
-                  : 'Hình phạt do Chủ phòng chỉ định cho kẻ bị kết án trong ván này'}
+                  ? 'Số hình phạt tương ứng chính xác số hiệp diễn ra. Bạn có thể cài đặt hình phạt riêng biệt cho từng hiệp!' 
+                  : 'Danh sách hình phạt riêng cho từng hiệp do Chủ phòng thiết lập cho kẻ bị kết án'}
               </p>
             </div>
           </div>
-          <div className="max-w-md text-right">
-            <span className="text-[11px] font-black uppercase px-3 py-1.5 bg-white border-2 border-slate-900 rounded-xl shadow-pop-sm text-rose-600 inline-block line-clamp-1">
-              Hình phạt: {gameState.roomPenalty || 'Bao cả phòng 1 ly trà sữa'}
-            </span>
-          </div>
+
+          {localPlayer.isHost && (
+            <button
+              type="button"
+              onClick={() => onRandomizeAllPenalties?.()}
+              className="px-3.5 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-slate-900 border-2 border-slate-900 rounded-xl font-black text-xs uppercase shadow-pop-sm flex items-center gap-1.5 cursor-pointer transition-transform active:translate-y-0.5"
+              title="Tự động chọn ngẫu nhiên các hình phạt khác nhau cho từng hiệp"
+            >
+              <span>🎲 Ngẫu nhiên tất cả hiệp</span>
+            </button>
+          )}
         </div>
 
-        {localPlayer.isHost ? (
-          <div className="space-y-2.5 pt-1">
-            <div className="text-[11px] font-black uppercase tracking-wider text-slate-600">
-              Chọn nhanh mẫu hình phạt hài hước:
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {PENALTY_PRESETS.map((preset) => {
-                const isSelected = (gameState.roomPenalty || '') === preset;
+        {/* Round Count Selector (Host only) */}
+        {localPlayer.isHost && (
+          <div className="flex flex-wrap items-center gap-2 bg-white/70 p-2.5 rounded-2xl border-2 border-slate-900">
+            <span className="text-xs font-black uppercase text-slate-700 font-display">
+              Số hiệp thi đấu trong trận:
+            </span>
+            <div className="flex items-center gap-1.5">
+              {[2, 3, 4, 5].map((rounds) => {
+                const isSelected = roundCount === rounds;
                 return (
                   <button
-                    key={preset}
+                    key={rounds}
                     type="button"
-                    onClick={() => {
-                      onSetRoomPenalty?.(preset);
-                      setCustomPenaltyInput('');
-                    }}
-                    className={`px-3 py-1.5 text-xs font-black rounded-xl border-2 border-slate-900 transition-all cursor-pointer ${
+                    onClick={() => onSetMaxRounds?.(rounds)}
+                    className={`px-3 py-1 text-xs font-black rounded-xl border-2 border-slate-900 transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-rose-500 text-white shadow-pop-sm -translate-y-0.5'
-                        : 'bg-white text-slate-700 hover:bg-rose-100 hover:border-slate-900'
+                        ? 'bg-rose-500 text-white shadow-pop-xs scale-105'
+                        : 'bg-white text-slate-700 hover:bg-rose-100'
                     }`}
                   >
-                    {isSelected ? '✓ ' : ''}{preset}
+                    {rounds} Hiệp {rounds === 3 ? '(Chuẩn)' : ''}
                   </button>
                 );
               })}
             </div>
-
-            <div className="flex gap-2 pt-1">
-              <input
-                type="text"
-                value={customPenaltyInput}
-                onChange={(e) => setCustomPenaltyInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && customPenaltyInput.trim()) {
-                    onSetRoomPenalty?.(customPenaltyInput.trim());
-                  }
-                }}
-                maxLength={100}
-                placeholder="Hoặc gõ hình phạt tự chế của bạn rồi bấm Áp dụng..."
-                className="flex-1 px-3 py-2 text-xs font-bold text-slate-900 bg-white border-2 border-slate-900 rounded-xl shadow-pop-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  if (customPenaltyInput.trim()) {
-                    onSetRoomPenalty?.(customPenaltyInput.trim());
-                  }
-                }}
-                disabled={!customPenaltyInput.trim()}
-                className="px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white border-2 border-slate-900 rounded-xl font-black text-xs uppercase shadow-pop-sm cursor-pointer transition-transform active:translate-y-0.5"
-              >
-                Áp dụng hình phạt
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="p-3 bg-white border-2 border-slate-900 rounded-2xl flex items-center gap-3">
-            <span className="text-xl font-black text-rose-500">⚖️</span>
-            <p className="text-xs font-black text-slate-800">
-              Kẻ bị kết án ván này sẽ phải: <span className="text-rose-600 underline decoration-rose-300 font-black">{gameState.roomPenalty || 'Chấp hành án phạt của chủ phòng'}</span>
-            </p>
+            <span className="text-[10px] font-bold text-slate-500 ml-auto hidden sm:inline">
+              Mỗi hiệp thêm vào sẽ tự động có 1 hình phạt riêng tương ứng
+            </span>
           </div>
         )}
+
+        {/* Tab Selection for Rounds (Host only) */}
+        {localPlayer.isHost && (
+          <div className="space-y-3 pt-1">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              <span className="text-[11px] font-black uppercase tracking-wider text-slate-600 shrink-0">
+                Chọn hiệp để chỉnh:
+              </span>
+              <div className="flex gap-2">
+                {currentPenalties.map((pen, idx) => {
+                  const isTabActive = activeRoundIndex === idx;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setSelectedRoundTab(idx);
+                        setCustomPenaltyInput('');
+                      }}
+                      className={`px-3.5 py-1.5 text-xs font-black rounded-xl border-2 border-slate-900 transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                        isTabActive
+                          ? 'bg-rose-500 text-white shadow-pop-sm -translate-y-0.5'
+                          : 'bg-white text-slate-700 hover:bg-rose-100'
+                      }`}
+                    >
+                      <span>HIỆP {idx + 1}</span>
+                      {isTabActive && <span className="text-[10px] bg-white text-rose-600 px-1.5 py-0.2 rounded-full font-black">SỬA</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Editing Panel for activeRoundIndex */}
+            <div className="p-3.5 bg-white border-2 border-slate-900 rounded-2xl shadow-pop-xs space-y-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
+                <span className="text-xs font-black uppercase text-slate-800">
+                  Cài đặt hình phạt cho <span className="text-rose-600 underline decoration-rose-300">HIỆP {activeRoundIndex + 1}</span>:
+                </span>
+                <span className="text-[11px] font-black px-2.5 py-0.5 bg-rose-50 border border-rose-300 rounded-lg text-rose-700 line-clamp-1 max-w-sm">
+                  Đang chọn: &ldquo;{currentPenalties[activeRoundIndex]}&rdquo;
+                </span>
+              </div>
+
+              {/* Fast Presets */}
+              <div className="flex flex-wrap gap-1.5">
+                {PENALTY_PRESETS.map((preset) => {
+                  const isSelected = currentPenalties[activeRoundIndex] === preset;
+                  return (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => {
+                        onSetRoundPenalty?.(activeRoundIndex, preset);
+                        setCustomPenaltyInput('');
+                      }}
+                      className={`px-2.5 py-1 text-[11px] font-black rounded-lg border-2 border-slate-900 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-rose-500 text-white shadow-pop-xs -translate-y-0.5'
+                          : 'bg-slate-50 text-slate-700 hover:bg-rose-100 hover:border-slate-900'
+                      }`}
+                    >
+                      {isSelected ? '✓ ' : ''}{preset}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Custom Input for this round */}
+              <div className="flex gap-2 pt-1">
+                <input
+                  type="text"
+                  value={customPenaltyInput}
+                  onChange={(e) => setCustomPenaltyInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && customPenaltyInput.trim()) {
+                      onSetRoundPenalty?.(activeRoundIndex, customPenaltyInput.trim());
+                      setCustomPenaltyInput('');
+                    }
+                  }}
+                  maxLength={100}
+                  placeholder={`Hoặc gõ hình phạt tự chế cho Hiệp ${activeRoundIndex + 1} rồi bấm Áp dụng...`}
+                  className="flex-1 px-3 py-2 text-xs font-bold text-slate-900 bg-paper-cream border-2 border-slate-900 rounded-xl shadow-pop-xs focus:outline-none focus:ring-2 focus:ring-rose-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (customPenaltyInput.trim()) {
+                      onSetRoundPenalty?.(activeRoundIndex, customPenaltyInput.trim());
+                      setCustomPenaltyInput('');
+                    }
+                  }}
+                  disabled={!customPenaltyInput.trim()}
+                  className="px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white border-2 border-slate-900 rounded-xl font-black text-xs uppercase shadow-pop-xs cursor-pointer transition-transform active:translate-y-0.5"
+                >
+                  Lưu Hiệp {activeRoundIndex + 1}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Schedule of All Round Penalties (Live & visible to both Host and Guests) */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between text-[11px] font-black uppercase text-slate-600 tracking-wider">
+            <span>Danh sách hình phạt các hiệp thi đấu:</span>
+            {localPlayer.isHost && (
+              <span className="text-[10px] text-rose-600 lowercase font-bold">
+                (bấm vào hiệp bất kỳ bên dưới để chỉnh sửa)
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+            {currentPenalties.map((pen, idx) => {
+              const isSelectedTab = localPlayer.isHost && activeRoundIndex === idx;
+              return (
+                <div
+                  key={idx}
+                  onClick={() => {
+                    if (localPlayer.isHost) {
+                      setSelectedRoundTab(idx);
+                      setCustomPenaltyInput('');
+                    }
+                  }}
+                  className={`p-3 rounded-2xl border-2 border-slate-900 shadow-pop-xs text-left transition-all ${
+                    localPlayer.isHost ? 'cursor-pointer hover:border-rose-500 hover:bg-rose-50/50' : ''
+                  } ${
+                    isSelectedTab
+                      ? 'bg-rose-100 border-rose-600 ring-2 ring-rose-400'
+                      : 'bg-white'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-slate-900 text-white">
+                      Hiệp {idx + 1}
+                    </span>
+                    {isSelectedTab && (
+                      <span className="text-[9px] font-black uppercase text-rose-700 bg-rose-200/80 px-1.5 py-0.2 rounded-full">
+                        Đang chọn
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs font-black text-slate-900 line-clamp-2 leading-relaxed">
+                    {pen || `Chưa đặt hình phạt cho Hiệp ${idx + 1}`}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Main Grid: Avatar Customizer & Player Roster */}

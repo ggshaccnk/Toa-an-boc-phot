@@ -42,6 +42,10 @@ export default function Home() {
     startAccusationPhase,
     startGameWithCountdown,
     setRoomPenalty,
+    setRoundPenalty,
+    setAllRoundPenalties,
+    setMaxRounds,
+    randomizeAllPenalties,
     playDefenseCard,
     playCustomCard,
     startVotingPhase,
@@ -70,6 +74,10 @@ export default function Home() {
             onJoinRoom={joinRoomAsGuest}
             onSetGameMode={setGameMode}
             onSetRoomPenalty={setRoomPenalty}
+            onSetRoundPenalty={setRoundPenalty}
+            onSetAllRoundPenalties={setAllRoundPenalties}
+            onSetMaxRounds={setMaxRounds}
+            onRandomizeAllPenalties={randomizeAllPenalties}
             onSetGeminiApiKey={setGeminiApiKey}
             onUpdateProfile={updateProfile}
             onSubmitCustomPrompt={submitCustomPrompt}
@@ -345,17 +353,29 @@ export default function Home() {
               </div>
             )}
 
-            {/* Room Penalty Reminder */}
-            {gameState.roomPenalty && (
-              <div className="p-3 bg-white border-2 border-slate-900 rounded-2xl text-left">
-                <span className="text-[10px] font-black uppercase text-rose-600 block">
-                  CẢNH BÁO HÌNH PHẠT CHO BỊ CÁO THUA CUỘC:
-                </span>
-                <span className="text-xs font-black text-slate-800">
-                  {gameState.roomPenalty}
-                </span>
-              </div>
-            )}
+            {/* Round Penalty Reminder */}
+            {(() => {
+              const currentRoundIdx = Math.max(0, (gameState.round || 1) - 1);
+              const roundPenalty =
+                (gameState.roundPenalties && gameState.roundPenalties[currentRoundIdx]) ||
+                gameState.roomPenalty;
+              if (!roundPenalty) return null;
+              return (
+                <div className="p-3 bg-white border-2 border-slate-900 rounded-2xl text-left shadow-pop-xs">
+                  <div className="flex items-center justify-between gap-1 mb-0.5">
+                    <span className="text-[10px] font-black uppercase text-rose-600">
+                      CẢNH BÁO HÌNH PHẠT HIỆP {gameState.round || 1}:
+                    </span>
+                    <span className="text-[9px] font-black uppercase bg-slate-900 text-white px-1.5 py-0.2 rounded">
+                      Hiệp {gameState.round || 1}/{gameState.maxRounds}
+                    </span>
+                  </div>
+                  <span className="text-xs font-black text-slate-800">
+                    {roundPenalty}
+                  </span>
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}

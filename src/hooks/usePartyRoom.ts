@@ -19,6 +19,21 @@ import { partyAudio } from '@/lib/partyAudio';
 import { generateBotSketch, BOT_GUESS_PRESETS } from '@/lib/botArtist';
 import confetti from 'canvas-confetti';
 
+export const DEFAULT_ROUND_PENALTIES = [
+  'Bao cả phòng 1 ly trà sữa / nước ngọt lần tới',
+  'Hát 1 bài hoặc ngâm thơ 4 câu do phòng chỉ định',
+  'Đổi ảnh đại diện mạng xã hội thành hình bựa trong 24h',
+  'Uống cạn 1 cốc nước lọc trong 10 giây',
+  'Kể một bí mật xấu hổ chưa từng tiết lộ cho ai',
+  'Gọi điện cho bạn bè / người yêu cũ nói 1 câu ngớ ngẩn',
+  'Chụp ảnh selfie mặt xấu nhất gửi ngay vào nhóm chat',
+  'Bắt chước tiếng kêu của 3 con vật khác nhau',
+  'Tự nhận mình là kẻ ngốc nhất bàn và cúi đầu xin lỗi 3 lần',
+  'Làm mặt quỷ giữ nguyên trong 30 giây cho cả phòng chụp ảnh',
+  'Bật cam múa phụ họa theo 1 điệu nhảy hot trend TikTok',
+  'Đọc rap 1 đoạn giới thiệu bản thân cực ngáo ngơ',
+];
+
 const ROUNDS_PER_MATCH = 3;
 const DEFENSE_DURATION = 30; // seconds
 const VOTING_DURATION = 20; // seconds
@@ -66,7 +81,8 @@ export function usePartyRoom() {
     geminiApiKey: '',
     chatMessages: [],
     countdown: null,
-    roomPenalty: 'Bao cả phòng 1 ly trà sữa / nước ngọt lần gặp tới',
+    roomPenalty: 'Bao cả phòng 1 ly trà sữa / nước ngọt lần tới',
+    roundPenalties: DEFAULT_ROUND_PENALTIES.slice(0, ROUNDS_PER_MATCH),
     history: [],
   });
 
@@ -377,6 +393,58 @@ export function usePartyRoom() {
               ...prev,
               roomPenalty: data.payload.penalty,
             }));
+          }
+          break;
+
+        case 'SET_ROUND_PENALTY':
+          if (localPlayer.isHost) {
+            const { roundIndex, penalty } = data.payload;
+            syncStateAndBroadcast((prev) => {
+              const list = prev.roundPenalties && prev.roundPenalties.length === prev.maxRounds
+                ? [...prev.roundPenalties]
+                : DEFAULT_ROUND_PENALTIES.slice(0, prev.maxRounds);
+              if (roundIndex >= 0 && roundIndex < list.length) {
+                list[roundIndex] = penalty;
+              }
+              return {
+                ...prev,
+                roundPenalties: list,
+                roomPenalty: roundIndex === 0 ? penalty : prev.roomPenalty,
+              };
+            });
+          }
+          break;
+
+        case 'SET_ALL_PENALTIES':
+          if (localPlayer.isHost) {
+            syncStateAndBroadcast((prev) => ({
+              ...prev,
+              roundPenalties: data.payload.penalties,
+              roomPenalty: data.payload.penalties[0] || prev.roomPenalty,
+            }));
+          }
+          break;
+
+        case 'SET_MAX_ROUNDS':
+          if (localPlayer.isHost) {
+            const rounds = Math.max(1, Math.min(10, data.payload.maxRounds || 3));
+            syncStateAndBroadcast((prev) => {
+              let updated = prev.roundPenalties ? [...prev.roundPenalties] : [];
+              if (updated.length < rounds) {
+                const pool = DEFAULT_ROUND_PENALTIES.filter((p) => !updated.includes(p));
+                while (updated.length < rounds) {
+                  updated.push(pool.shift() || `Hình phạt Hiệp ${updated.length + 1}`);
+                }
+              } else {
+                updated = updated.slice(0, rounds);
+              }
+              return {
+                ...prev,
+                maxRounds: rounds,
+                roundPenalties: updated,
+                roomPenalty: updated[0] || prev.roomPenalty,
+              };
+            });
           }
           break;
 
@@ -836,17 +904,22 @@ export function usePartyRoom() {
     };
   }, [gameState.timerActive, gameState.phaseTimer]);
 
-  // Set host-customized room penalty rule
+  // Set host-customized room penalty rule (single / fallback)
   const setRoomPenalty = useCallback(
     (penalty: string) => {
       const clean = penalty.trim();
       if (!clean) return;
       partyAudio.playCardHover();
       if (localPlayer.isHost) {
-        syncStateAndBroadcast((prev) => ({
-          ...prev,
-          roomPenalty: clean,
-        }));
+        syncStateAndBroadcast((prev) => {
+          const updated = [...(prev.roundPenalties || DEFAULT_ROUND_PENALTIES.slice(0, prev.maxRounds))];
+          if (updated.length > 0) updated[0] = clean;
+          return {
+            ...prev,
+            roomPenalty: clean,
+            roundPenalties: updated,
+          };
+        });
       } else if (hostConnRef.current && hostConnRef.current.open) {
         hostConnRef.current.send({
           type: 'SET_ROOM_PENALTY',
@@ -857,6 +930,114 @@ export function usePartyRoom() {
     },
     [localPlayer.isHost, localPlayer.id, syncStateAndBroadcast]
   );
+
+  // Set host-customized penalty for a specific round (0-indexed)
+  const setRoundPenalty = useCallback(
+    (roundIndex: number, penalty: string) => {
+      const clean = penalty.trim();
+      if (!clean) return;
+      partyAudio.playCardHover();
+      if (localPlayer.isHost) {
+        syncStateAndBroadcast((prev) => {
+          const list = prev.roundPenalties && prev.roundPenalties.length === prev.maxRounds
+            ? [...prev.roundPenalties]
+            : DEFAULT_ROUND_PENALTIES.slice(0, prev.maxRounds);
+          if (roundIndex >= 0 && roundIndex < list.length) {
+            list[roundIndex] = clean;
+          }
+          return {
+            ...prev,
+            roundPenalties: list,
+            roomPenalty: roundIndex === 0 ? clean : prev.roomPenalty,
+          };
+        });
+      } else if (hostConnRef.current && hostConnRef.current.open) {
+        hostConnRef.current.send({
+          type: 'SET_ROUND_PENALTY',
+          payload: { roundIndex, penalty: clean },
+          senderId: localPlayer.id,
+        });
+      }
+    },
+    [localPlayer.isHost, localPlayer.id, syncStateAndBroadcast]
+  );
+
+  // Set all round penalties at once
+  const setAllRoundPenalties = useCallback(
+    (penalties: string[]) => {
+      if (!penalties || penalties.length === 0) return;
+      partyAudio.playCardHover();
+      if (localPlayer.isHost) {
+        syncStateAndBroadcast((prev) => ({
+          ...prev,
+          roundPenalties: penalties,
+          roomPenalty: penalties[0] || prev.roomPenalty,
+        }));
+      } else if (hostConnRef.current && hostConnRef.current.open) {
+        hostConnRef.current.send({
+          type: 'SET_ALL_PENALTIES',
+          payload: { penalties },
+          senderId: localPlayer.id,
+        });
+      }
+    },
+    [localPlayer.isHost, localPlayer.id, syncStateAndBroadcast]
+  );
+
+  // Set number of match rounds (and ensure roundPenalties has exact same length)
+  const setMaxRounds = useCallback(
+    (rounds: number) => {
+      const targetRounds = Math.max(1, Math.min(10, Math.floor(rounds)));
+      partyAudio.playCardHover();
+      if (localPlayer.isHost) {
+        syncStateAndBroadcast((prev) => {
+          let list = prev.roundPenalties ? [...prev.roundPenalties] : [];
+          if (list.length < targetRounds) {
+            const pool = DEFAULT_ROUND_PENALTIES.filter((p) => !list.includes(p));
+            while (list.length < targetRounds) {
+              list.push(pool.shift() || `Hình phạt Hiệp ${list.length + 1}`);
+            }
+          } else {
+            list = list.slice(0, targetRounds);
+          }
+          return {
+            ...prev,
+            maxRounds: targetRounds,
+            roundPenalties: list,
+            roomPenalty: list[0] || prev.roomPenalty,
+          };
+        });
+      } else if (hostConnRef.current && hostConnRef.current.open) {
+        hostConnRef.current.send({
+          type: 'SET_MAX_ROUNDS',
+          payload: { maxRounds: targetRounds },
+          senderId: localPlayer.id,
+        });
+      }
+    },
+    [localPlayer.isHost, localPlayer.id, syncStateAndBroadcast]
+  );
+
+  // Randomize penalties for all rounds
+  const randomizeAllPenalties = useCallback(() => {
+    partyAudio.playEmotePop();
+    const count = gameState.maxRounds || 3;
+    const shuffled = [...DEFAULT_ROUND_PENALTIES].sort(() => 0.5 - Math.random());
+    const picked = shuffled.slice(0, count);
+    if (localPlayer.isHost) {
+      syncStateAndBroadcast((prev) => ({
+        ...prev,
+        roundPenalties: picked,
+        roomPenalty: picked[0] || prev.roomPenalty,
+      }));
+    } else if (hostConnRef.current && hostConnRef.current.open) {
+      hostConnRef.current.send({
+        type: 'SET_ALL_PENALTIES',
+        payload: { penalties: picked },
+        senderId: localPlayer.id,
+      });
+    }
+  }, [gameState.maxRounds, localPlayer.isHost, localPlayer.id, syncStateAndBroadcast]);
 
   // Phase transition logic: Khởi tố (Supports Custom Prompts + AI + Anti-Repeat)
   const startAccusationPhase = useCallback(
@@ -1494,7 +1675,9 @@ export function usePartyRoom() {
 
       const chaosMessages: string[] = [];
       const prompt = prev.currentPrompt;
+      const roundIdx = Math.max(0, (prev.round || 1) - 1);
       const penalty =
+        (prev.roundPenalties && prev.roundPenalties[roundIdx]?.trim()) ||
         prev.roomPenalty?.trim() ||
         prompt?.penalties[Math.floor(Math.random() * prompt.penalties.length)] ||
         'Phải thừa nhận mình là kẻ ngốc nhất bàn và tự giác làm trò hề!';
@@ -1778,6 +1961,8 @@ export function usePartyRoom() {
       usedPromptIds: [],
       geminiApiKey: '',
       chatMessages: [],
+      roomPenalty: 'Bao cả phòng 1 ly trà sữa / nước ngọt lần tới',
+      roundPenalties: DEFAULT_ROUND_PENALTIES.slice(0, ROUNDS_PER_MATCH),
       history: [],
     });
 
@@ -1888,6 +2073,10 @@ export function usePartyRoom() {
     startAccusationPhase,
     startGameWithCountdown,
     setRoomPenalty,
+    setRoundPenalty,
+    setAllRoundPenalties,
+    setMaxRounds,
+    randomizeAllPenalties,
     playDefenseCard,
     playCustomCard,
     startVotingPhase,

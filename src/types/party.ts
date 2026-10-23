@@ -110,6 +110,7 @@ export interface GameState {
   chatMessages?: ChatMessage[];
   countdown?: number | null;
   roomPenalty?: string;
+  roundPenalties?: string[];
   history: {
     round: number;
     promptTitle: string;
@@ -127,6 +128,9 @@ export interface PeerMessage {
     | 'UPDATE_PROFILE'
     | 'SUBMIT_CUSTOM_PROMPT'
     | 'SET_ROOM_PENALTY'
+    | 'SET_ROUND_PENALTY'
+    | 'SET_ALL_PENALTIES'
+    | 'SET_MAX_ROUNDS'
     | 'START_GAME'
     | 'PLAY_CARD'
     | 'SUBMIT_SKETCH'
